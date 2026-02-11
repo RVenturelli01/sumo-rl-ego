@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on mar 22 gen 2019 12:22:58 CET by Eclipse SUMO netedit Version 1.0.1
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <sumo-net-file value="/home/riccardo/thesis/code/urban/t_cross/parametric_state_4act/networks/t_cross_3_way_po/cross_building.net.xml"/>
+    </input>
+
+    <output>
+        <output-file value="/home/riccardo/thesis/code/urban/t_cross/parametric_state_4act/networks/t_cross_3_way_po/cross_building.net.xml"/>
+    </output>
+
+    <processing>
+        <offset.disable-normalization value="true"/>
+        <lefthand value="false"/>
+    </processing>
+
+    <junctions>
+        <no-turnarounds value="true"/>
+        <junctions.corner-detail value="0"/>
+        <junctions.limit-turn-speed value="-1"/>
+        <rectangular-lane-cut value="false"/>
+    </junctions>
+
+    <pedestrian>
+        <walkingareas value="false"/>
+    </pedestrian>
+
+</configuration>
+-->
+
+<net version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+
+    <location netOffset="510.00,510.00" convBoundary="310.00,310.00,710.00,510.00" origBoundary="-510.00,-510.00,510.00,510.00" projParameter="!"/>
+
+    <edge id=":jun_0" function="internal">
+        <lane id=":jun_0_0" index="0" speed="14.00" length="6.40" shape="513.20,511.60 506.80,511.60"/>
+    </edge>
+    <edge id=":jun_1" function="internal">
+        <lane id=":jun_1_0" index="0" speed="14.00" length="4.34" shape="513.20,511.60 511.10,511.30 509.60,510.40 509.36,510.00"/>
+    </edge>
+    <edge id=":jun_6" function="internal">
+        <lane id=":jun_6_0" index="0" speed="14.00" length="3.40" shape="509.36,510.00 508.70,508.90 508.40,506.80"/>
+    </edge>
+    <edge id=":jun_2" function="internal">
+        <lane id=":jun_2_0" index="0" speed="14.00" length="2.58" shape="511.60,506.80 511.70,507.50 512.00,508.00 512.50,508.30 513.20,508.40"/>
+    </edge>
+    <edge id=":jun_3" function="internal">
+        <lane id=":jun_3_0" index="0" speed="14.00" length="7.74" shape="511.60,506.80 511.30,508.90 510.40,510.40 508.90,511.30 506.80,511.60"/>
+    </edge>
+    <edge id=":jun_4" function="internal">
+        <lane id=":jun_4_0" index="0" speed="14.00" length="2.58" shape="506.80,508.40 507.50,508.30 508.00,508.00 508.30,507.50 508.40,506.80"/>
+    </edge>
+    <edge id=":jun_5" function="internal">
+        <lane id=":jun_5_0" index="0" speed="14.00" length="6.40" shape="506.80,508.40 513.20,508.40"/>
+    </edge>
+
+    <edge id="1i" from="1" to="jun" priority="1">
+        <lane id="1i_0" index="0" speed="14.00" length="196.80" shape="310.00,508.40 506.80,508.40"/>
+    </edge>
+    <edge id="1o" from="jun" to="1" priority="1">
+        <lane id="1o_0" index="0" speed="14.00" length="196.80" shape="506.80,511.60 310.00,511.60"/>
+    </edge>
+    <edge id="2i" from="2" to="jun" priority="1">
+        <lane id="2i_0" index="0" speed="14.00" length="196.80" shape="710.00,511.60 513.20,511.60"/>
+    </edge>
+    <edge id="2o" from="jun" to="2" priority="1">
+        <lane id="2o_0" index="0" speed="14.00" length="196.80" shape="513.20,508.40 710.00,508.40"/>
+    </edge>
+    <edge id="3i" from="3" to="jun" priority="0">
+        <lane id="3i_0" index="0" speed="14.00" length="196.80" shape="511.60,310.00 511.60,506.80"/>
+    </edge>
+    <edge id="3o" from="jun" to="3" priority="0">
+        <lane id="3o_0" index="0" speed="14.00" length="196.80" shape="508.40,506.80 508.40,310.00"/>
+    </edge>
+
+    <junction id="1" type="dead_end" x="310.00" y="510.00" incLanes="1o_0" intLanes="" shape="310.00,510.00 310.00,513.20 310.00,510.00"/>
+    <junction id="2" type="dead_end" x="710.00" y="510.00" incLanes="2o_0" intLanes="" shape="710.00,510.00 710.00,506.80 710.00,510.00"/>
+    <junction id="3" type="dead_end" x="510.00" y="310.00" incLanes="3o_0" intLanes="" shape="510.00,310.00 506.80,310.00 510.00,310.00"/>
+    <junction id="jun" type="priority" x="510.00" y="510.00" incLanes="2i_0 3i_0 1i_0" intLanes=":jun_0_0 :jun_6_0 :jun_2_0 :jun_3_0 :jun_4_0 :jun_5_0" shape="513.20,513.20 513.20,506.80 506.80,506.80 506.80,513.20" radius="0.00">
+        <request index="0" response="000000" foes="001000" cont="0"/>
+        <request index="1" response="110000" foes="111000" cont="1"/>
+        <request index="2" response="100000" foes="100000" cont="0"/>
+        <request index="3" response="100011" foes="100011" cont="0"/>
+        <request index="4" response="000000" foes="000010" cont="0"/>
+        <request index="5" response="000000" foes="001110" cont="0"/>
+    </junction>
+
+    <junction id=":jun_6_0" type="internal" x="509.36" y="510.00" incLanes=":jun_1_0 1i_0" intLanes=":jun_3_0 :jun_4_0 :jun_5_0"/>
+
+    <connection from="1i" to="3o" fromLane="0" toLane="0" via=":jun_4_0" dir="r" state="M"/>
+    <connection from="1i" to="2o" fromLane="0" toLane="0" via=":jun_5_0" dir="s" state="M"/>
+    <connection from="2i" to="1o" fromLane="0" toLane="0" via=":jun_0_0" dir="s" state="M"/>
+    <connection from="2i" to="3o" fromLane="0" toLane="0" via=":jun_1_0" dir="l" state="m"/>
+    <connection from="3i" to="2o" fromLane="0" toLane="0" via=":jun_2_0" dir="r" state="m"/>
+    <connection from="3i" to="1o" fromLane="0" toLane="0" via=":jun_3_0" dir="l" state="m"/>
+
+    <connection from=":jun_0" to="1o" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":jun_1" to="3o" fromLane="0" toLane="0" via=":jun_6_0" dir="l" state="m"/>
+    <connection from=":jun_6" to="3o" fromLane="0" toLane="0" dir="l" state="M"/>
+    <connection from=":jun_2" to="2o" fromLane="0" toLane="0" dir="r" state="M"/>
+    <connection from=":jun_3" to="1o" fromLane="0" toLane="0" dir="l" state="M"/>
+    <connection from=":jun_4" to="3o" fromLane="0" toLane="0" dir="r" state="M"/>
+    <connection from=":jun_5" to="2o" fromLane="0" toLane="0" dir="s" state="M"/>
+
+</net>

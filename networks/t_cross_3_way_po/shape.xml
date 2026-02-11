@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on mar 22 gen 2019 12:23:12 CET by Eclipse SUMO netedit Version 1.0.1
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <sumo-net-file value="/home/riccardo/thesis/code/urban/t_cross/parametric_state_4act/networks/t_cross_3_way_po/cross_building.net.xml"/>
+    </input>
+
+    <output>
+        <output-file value="/home/riccardo/thesis/code/urban/t_cross/parametric_state_4act/networks/t_cross_3_way_po/cross_building.net.xml"/>
+    </output>
+
+    <processing>
+        <offset.disable-normalization value="true"/>
+        <lefthand value="false"/>
+    </processing>
+
+    <junctions>
+        <no-turnarounds value="true"/>
+        <junctions.corner-detail value="0"/>
+        <junctions.limit-turn-speed value="-1"/>
+        <rectangular-lane-cut value="false"/>
+    </junctions>
+
+    <pedestrian>
+        <walkingareas value="false"/>
+    </pedestrian>
+
+</configuration>
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <poly id="poly_0" color="red" fill="1" layer="128.00" shape="494.110000,496.200000 492.100000,448.430000 465.420000,450.210000 468.990000,498.880000 494.110000,496.200000"/>
+</additional>

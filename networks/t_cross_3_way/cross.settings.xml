@@ -1,0 +1,12 @@
+<viewsettings>
+    <delay value="20"/>
+    <scheme name="real world"/>
+    <vehicles vehicleMode="0" vehicleQuality="3" vehicle_minSize="0.00" vehicle_exaggeration="1.00" vehicle_constantSize="0" showBlinker="1"
+                  vehicleName_show="0" vehicleName_size="50.00" vehicleName_color="red">
+   
+  	<colorScheme name="given vehicle/type/route color ">
+        </colorScheme>
+           
+</vehicles>
+    
+</viewsettings>

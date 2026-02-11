@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on ven 12 apr 2019 12:21:36 CEST by Eclipse SUMO netedit Version 1.0.1
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <sumo-net-file value="/home/riccardo/thesis/code/urban/t_cross/parametric_state_4act/networks/t_cross_3_way_emptyPO/cross.net.xml"/>
+    </input>
+
+    <output>
+        <output-file value="/home/riccardo/thesis/code/urban/t_cross/parametric_state_4act/networks/t_cross_3_way_emptyPO/cross.net.xml"/>
+    </output>
+
+    <processing>
+        <offset.disable-normalization value="true"/>
+        <lefthand value="false"/>
+    </processing>
+
+    <junctions>
+        <no-turnarounds value="true"/>
+        <junctions.corner-detail value="0"/>
+        <junctions.limit-turn-speed value="-1"/>
+        <rectangular-lane-cut value="false"/>
+    </junctions>
+
+    <pedestrian>
+        <walkingareas value="false"/>
+    </pedestrian>
+
+</configuration>
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <poly id="poly_0" color="121,119,122" fill="1" layer="128.00" shape="522.630000,500.020000 522.630000,388.430000 643.700000,388.430000 643.700000,500.280000 522.630000,500.020000"/>
+    <poly id="poly_1" color="121,119,122" fill="1" layer="128.00" shape="499.740000,500.020000 499.210000,388.960000 391.830000,388.960000 391.830000,501.600000 499.740000,500.020000"/>
+</additional>
