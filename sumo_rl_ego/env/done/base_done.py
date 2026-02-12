@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod 
 
-class BaseDone(ABC):
 
-    @abstractmethod
-    def check(self, sim, ego, step_count):
+class BaseDone(ABC): 
+    
+    @abstractmethod 
+    def check(self, sim, ego, step_count): 
         pass

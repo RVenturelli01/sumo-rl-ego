@@ -9,29 +9,49 @@ class SumoConfig:
         obs_class=None,
         reward_class=None,
         done_class=None,
+        simulation_end: int = 1000,
+        time_step: float = 0.1,
+        seed: int = 0,
+        delta_decel: float = 0.5,
+        extra_sumo_args: list | None = None,
     ):
         self.sumocfg_file = sumocfg_file
         self.use_gui = use_gui
         self.auto_start = auto_start
         self.ego_id = ego_id
+        self.simulation_end = simulation_end
 
-        # Class factories (Strategy injection)
+        self.time_step = time_step
+        self.seed = seed
+        self.delta_decel = delta_decel
+        self.extra_sumo_args = extra_sumo_args or []
+
+        # Strategy injection
         self.ego_class = ego_class
         self.obs_class = obs_class
         self.reward_class = reward_class
         self.done_class = done_class
 
+
     @property
     def sumo_binary(self):
         return "sumo-gui" if self.use_gui else "sumo"
+
 
     def build_cmd(self):
         cmd = [
             self.sumo_binary,
             "-c", self.sumocfg_file,
+            "--step-length", str(self.time_step),
+            "--seed", str(self.seed),
+            "--no-step-log",
+            "--no-warnings",
         ]
 
         if self.auto_start:
             cmd.append("--start")
 
+        cmd.extend(self.extra_sumo_args)
+
+        print(" ".join(cmd))
         return cmd
