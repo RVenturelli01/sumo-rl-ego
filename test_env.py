@@ -1,14 +1,23 @@
-from sumo_env.env import SumoEnv
+from env.sumo_env import SumoEnv
+from configs.config import SumoConfig
 
-env = SumoEnv()
+config = SumoConfig(
+    net_file="networks/highway_fast/highway.net.xml",
+    route_file="networks/highway_fast/highway.rou.xml",
+    ego_id="ego",
+    use_gui=True,
+    auto_start=False, 
+)
+
+env = SumoEnv(config)
 
 obs, _ = env.reset()
-print("Initial obs:", obs)
 
-for _ in range(1000):
+for _ in range(2000):
     action = env.action_space.sample()
-    obs, reward, terminated, truncated, _ = env.step(action)
+    obs, reward, terminated, truncated, info = env.step(action)
 
-    print("Obs:", obs, "Reward:", reward)
+    if terminated or truncated:
+        break
 
 env.close()
