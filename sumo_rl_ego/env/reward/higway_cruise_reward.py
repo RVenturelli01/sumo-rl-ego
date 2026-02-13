@@ -91,15 +91,25 @@ class HighwayCruiseReward(BaseReward):
         if hasattr(sim, "last_lane_change") and sim.last_lane_change:
             reward += self.w_lane_change
 
+        return reward
 
-        # =========================
-        # 4) SAFETY PENALTIES
-        # =========================
-        if sim.has_crashed(ego.id):
-            reward += self.w_crash
 
-        if sim.is_off_road():
-            reward += self.w_offroad
+    def compute_terminal(
+        self,
+        has_collided: bool,
+        has_teleported: bool,
+        is_off_road: bool,
+        route_completed: bool,
+        ego_removed_unknown: bool,
+        truncated_due_to_timeout: bool,
+    ):
 
+        reward = 0.0
+
+        if has_collided:
+            reward = self.w_crash
+
+        elif is_off_road:
+            reward = self.w_offroad
 
         return reward
