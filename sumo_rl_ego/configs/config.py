@@ -53,5 +53,5 @@ class SumoConfig:
 
         cmd.extend(self.extra_sumo_args)
 
-        print(" ".join(cmd))
+        print("Inizializzazione comando SUMO:", " ".join(cmd))
         return cmd

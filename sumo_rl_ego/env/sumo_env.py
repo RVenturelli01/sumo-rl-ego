@@ -13,7 +13,6 @@ class SumoEnv(gym.Env):
         self.ego = config.ego_class(config.ego_id)
         self.obs_builder = config.obs_class()
         self.reward_fn = config.reward_class()
-        self.termination_fn = config.termination_class()
 
         self.action_space = self.ego.action_space
         self.observation_space = self.obs_builder.observation_space
@@ -49,7 +48,7 @@ class SumoEnv(gym.Env):
         # Neutral step
         traci.simulationStep()
 
-        obs = self.obs_builder.build(traci, self.ego)
+        obs = self.obs_builder.build(self.ego)
 
         return obs, {}
 
@@ -67,7 +66,7 @@ class SumoEnv(gym.Env):
             return obs, reward, terminated, truncated, info
 
         # Apply action
-        self.ego.apply_action(traci, action)
+        self.ego.apply_action(action)
 
         traci.simulationStep()
         self.step_count += 1
@@ -88,7 +87,7 @@ class SumoEnv(gym.Env):
         if terminated or truncated:
             obs = self.observation_space.sample()  # observation neutra
         else:
-            obs = self.obs_builder.build(traci, self.ego)
+            obs = self.obs_builder.build(self.ego)
 
         # Reward
         if terminated or truncated:
@@ -102,7 +101,7 @@ class SumoEnv(gym.Env):
             )
 
         else:
-            reward = self.reward_fn.compute(traci, self.ego)
+            reward = self.reward_fn.compute(self.ego, self.config.time_step)
 
         # Info dictionary
         if terminated or truncated:
@@ -134,3 +133,4 @@ class SumoEnv(gym.Env):
         if self.started:
             traci.close()
             self.started = False
+            print("Simulation closed.")
