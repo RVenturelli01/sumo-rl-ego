@@ -11,15 +11,7 @@ class BaseReward(ABC):
         pass
 
     @abstractmethod
-    def compute_terminal(
-        self,
-        has_collided: bool,
-        has_teleported: bool,
-        is_off_road: bool,
-        route_completed: bool,
-        ego_removed_unknown: bool,
-        truncated_due_to_timeout: bool,
-    ):
+    def compute_terminal(self, sim, info: dict) -> float:
         """
         Compute reward when episode terminates or is truncated.
         """

@@ -1,57 +1,56 @@
-import numpy as np
 from gymnasium.spaces import Discrete
 from enum import IntEnum
 from .base_ego import BaseEgoVehicle
 
 
 class DiscreteActions(IntEnum):
-    N = 0      # no-op i.e. take no action
-    D = 1      # Light slow down
-    CSD_1 = 2  # 0.5 m/s^2
-    CSD_2 = 3  # 1 m/s^2
-    CSD_3 = 4  # 1.5 m/s^2
-    HSD_1 = 5  # 2 m/s^2
-    HSD_2 = 6  # 2.5 m/s^2
-    HSD_3 = 7  # 3 m/s^2
-    SS = 8     # Same speed
+    N = 0      # no-op
+    SS = 1     # same speed (explicit hold)
+    ACC_1 = 2  # +1 m/s^2
+    ACC_2 = 3  # +2 m/s^2
+    DEC_1 = 4  # -1 m/s^2
+    DEC_2 = 5  # -2 m/s^2
 
 
 class DiscreteLongEgo(BaseEgoVehicle):
 
-    def __init__(self, veh_id, time_step=0.1, delta_decel=0.5):
+    def __init__(self, veh_id, time_step=0.1):
         super().__init__(veh_id)
 
         self.time_step = time_step
-        self.delta_decel = delta_decel
-
         self.action_space = Discrete(len(DiscreteActions))
 
+    # ===================================
+    # APPLY ACTION (TraCI-native)
+    # ===================================
     def apply_action(self, sim, action: int):
 
-        lane = sim.get_lane_index(self.id)
-        speed = sim.get_speed(self.id)
+        veh_id = self.id
 
-        # -------- Light slow down --------
-        if action == DiscreteActions.D:
-            slowed_speed = max(0, speed - self.delta_decel * self.time_step)
-            sim.set_speed(self.id, slowed_speed)
+        speed = sim.getSpeed(veh_id)
 
-        # -------- Comfortable slow downs --------
-        elif DiscreteActions.CSD_1 <= action <= DiscreteActions.CSD_3:
-            decel = (action - DiscreteActions.CSD_1 + 1) * self.delta_decel
-            slowed_speed = max(0, speed - decel * self.time_step)
-            sim.set_speed(self.id, slowed_speed)
-
-        # -------- Harsh slow downs --------
-        elif DiscreteActions.HSD_1 <= action <= DiscreteActions.HSD_3:
-            decel = (action - DiscreteActions.HSD_1 + 1) * self.delta_decel
-            slowed_speed = max(0, speed - decel * self.time_step)
-            sim.set_speed(self.id, slowed_speed)
+        # -------- No-op --------
+        if action == DiscreteActions.N:
+            return
 
         # -------- Same speed --------
-        elif action == DiscreteActions.SS:
-            sim.set_speed(self.id, speed)
+        if action == DiscreteActions.SS:
+            sim.setSpeed(veh_id, speed)
+            return
 
-        # -------- No-op (N) --------
+        # -------- Accelerations --------
+        if action == DiscreteActions.ACC_1:
+            accel = 1.0
+        elif action == DiscreteActions.ACC_2:
+            accel = 2.0
+
+        # -------- Decelerations --------
+        elif action == DiscreteActions.DEC_1:
+            accel = -1.0
+        elif action == DiscreteActions.DEC_2:
+            accel = -2.0
         else:
-            pass
+            return  # sicurezza
+
+        new_speed = max(0.0, speed + accel * self.time_step)
+        sim.setSpeed(veh_id, new_speed)

@@ -72,7 +72,7 @@ class HighwayCruiseReward(BaseReward):
         # 2) SMOOTHNESS TERM
         # =========================
         if self.prev_speed is not None:
-            accel = (speed - self.prev_speed) / sim.time_step
+            accel = (speed - self.prev_speed) / sim.getTimeStep()  
 
             if accel > 0:
                 reward += self.w_accel * accel
@@ -94,22 +94,14 @@ class HighwayCruiseReward(BaseReward):
         return reward
 
 
-    def compute_terminal(
-        self,
-        has_collided: bool,
-        has_teleported: bool,
-        is_off_road: bool,
-        route_completed: bool,
-        ego_removed_unknown: bool,
-        truncated_due_to_timeout: bool,
-    ):
+    def compute_terminal(self, sim, ego, info: dict) -> float:
 
         reward = 0.0
 
-        if has_collided:
+        if info.get("collided", False):
             reward = self.w_crash
 
-        elif is_off_road:
+        elif info.get("off_road", False):
             reward = self.w_offroad
 
         return reward
