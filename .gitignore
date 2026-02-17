@@ -10,3 +10,7 @@ __pycache__/
 # Virtual environment
 .venv/
 venv/
+
+dqn_sumo_agent.zip
+tensorboard_dqn/DQN*
+.vscode/settings.json
