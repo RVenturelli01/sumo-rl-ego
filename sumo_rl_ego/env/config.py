@@ -13,14 +13,11 @@ class SumoConfig:
         no_warnings: bool = True,
         extra_sumo_args: list | None = None,
 
-        # strategy classes (injected in env)
-        ego_class=None,
-        obs_class=None,
-        reward_class=None,
+        # ego id
         ego_id: str = "ego",
         
         # simulation parameters
-        simulation_end: int = 1000,
+        max_steps: int = 1000,
         time_step: float = 0.1,
         seed: int = random.randint(0, 10_000_000),
     ):
@@ -31,12 +28,9 @@ class SumoConfig:
         self.no_warnings = no_warnings
         self.extra_sumo_args = extra_sumo_args or []
         
-        self.ego_class = ego_class
-        self.obs_class = obs_class
-        self.reward_class = reward_class
         self.ego_id = ego_id
 
-        self.simulation_end = simulation_end
+        self.max_steps = max_steps
         self.time_step = time_step
         self.seed = seed
 
@@ -64,6 +58,6 @@ class SumoConfig:
 
         cmd.extend(self.extra_sumo_args)
 
-        print("Comando SUMO:", " ".join(cmd))
+        #print("Comando SUMO:", " ".join(cmd))
 
         return cmd

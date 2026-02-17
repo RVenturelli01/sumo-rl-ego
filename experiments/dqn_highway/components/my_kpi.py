@@ -1,4 +1,4 @@
-from ....sumo_rl_ego.kpi.base_kpi import BaseKPI
+from sumo_rl_ego.kpi.base_kpi import BaseKPI
 
 
 class MyKPI(BaseKPI):

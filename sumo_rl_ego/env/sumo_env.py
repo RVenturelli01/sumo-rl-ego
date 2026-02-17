@@ -39,6 +39,7 @@ class SumoEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
+        self.config.seed += 1  # ensure different seed at each reset for more varied episodes
         self.sim.reset()
         self.sim.wait_for_vehicle(self.ego.ego_id)
 
@@ -79,7 +80,7 @@ class SumoEnv(gym.Env):
         )
 
         truncated = (
-            self.step_count >= self.config.simulation_end and not terminated
+            self.step_count >= self.config.max_steps and not terminated
         )
 
         ep_status = {

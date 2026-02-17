@@ -1,6 +1,6 @@
 import numpy as np
 from gymnasium.spaces import Box
-from ....sumo_rl_ego.observation.base_observation import BaseObservation
+from sumo_rl_ego.observation.base_observation import BaseObservation
 from gymnasium.spaces import MultiDiscrete
 
 '''
