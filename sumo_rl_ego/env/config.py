@@ -1,37 +1,44 @@
+import random
+
+
 class SumoConfig:
     def __init__(
         self,
+
+        # cmd args for SUMO configuration
         sumocfg_file: str,
         use_gui: bool = False,
         auto_start: bool = True,
-        ego_id: str = "ego",
+        no_step_log: bool = True,
+        no_warnings: bool = True,
+        extra_sumo_args: list | None = None,
+
+        # strategy classes (injected in env)
         ego_class=None,
         obs_class=None,
         reward_class=None,
-        done_class=None,
+        ego_id: str = "ego",
+        
+        # simulation parameters
         simulation_end: int = 1000,
         time_step: float = 0.1,
-        seed: int = 0,
-        delta_decel: float = 0.5,
-        extra_sumo_args: list | None = None,
+        seed: int = random.randint(0, 10_000_000),
     ):
         self.sumocfg_file = sumocfg_file
         self.use_gui = use_gui
         self.auto_start = auto_start
-        self.ego_id = ego_id
-        self.simulation_end = simulation_end
-
-        self.time_step = time_step
-        self.seed = seed
-        self.delta_decel = delta_decel
+        self.no_step_log = no_step_log
+        self.no_warnings = no_warnings
         self.extra_sumo_args = extra_sumo_args or []
-
-        # Strategy injection
+        
         self.ego_class = ego_class
         self.obs_class = obs_class
         self.reward_class = reward_class
-        self.done_class = done_class
+        self.ego_id = ego_id
 
+        self.simulation_end = simulation_end
+        self.time_step = time_step
+        self.seed = seed
 
     @property
     def sumo_binary(self):
@@ -44,14 +51,19 @@ class SumoConfig:
             "-c", self.sumocfg_file,
             "--step-length", str(self.time_step),
             "--seed", str(self.seed),
-            "--no-step-log",
-            "--no-warnings",
         ]
 
         if self.auto_start:
             cmd.append("--start")
 
+        if self.no_step_log:
+            cmd.append("--no-step-log")
+
+        if self.no_warnings:
+            cmd.append("--no-warnings")
+
         cmd.extend(self.extra_sumo_args)
 
-        print("Inizializzazione comando SUMO:", " ".join(cmd))
+        print("Comando SUMO:", " ".join(cmd))
+
         return cmd

@@ -1,7 +1,6 @@
-import traci
 from gymnasium.spaces import Discrete
 from enum import IntEnum
-from .base_ego import BaseEgoVehicle
+from ....sumo_rl_ego.ego.base_ego import BaseEgoVehicle
 
 
 class DiscreteActions(IntEnum):
@@ -15,23 +14,21 @@ class DiscreteActions(IntEnum):
     LCR = 7    # lane change right
 
 
-class DiscreteLongLatEgo(BaseEgoVehicle):
+class MyEgo(BaseEgoVehicle):
 
-    def __init__(self, veh_id, time_step=0.1, lc_duration=2.0):
-        super().__init__(veh_id)
-
-        self.time_step = time_step
+    def __init__(self, 
+                 lc_duration=0):
+    
         self.lc_duration = lc_duration
+
         self.action_space = Discrete(len(DiscreteActions))
 
-    # ===================================
-    # APPLY ACTION
-    # ===================================
-    def apply_action(self, sim, action: int):
-        
-        veh_id = self.id
 
-        speed = sim.getSpeed(veh_id)
+    def apply_action(self, action):
+        
+        time_step = self.sim.config.time_step
+
+        speed = self.sim.vehicle.getSpeed(self.ego_id)
 
         # NO-OP
         if action == DiscreteActions.N:
@@ -39,7 +36,7 @@ class DiscreteLongLatEgo(BaseEgoVehicle):
 
         # SAME SPEED
         if action == DiscreteActions.SS:
-            sim.setSpeed(veh_id, speed)
+            self.sim.vehicle.setSpeed(self.id, speed)
             return
 
         # LONGITUDINAL CONTROL
@@ -55,17 +52,17 @@ class DiscreteLongLatEgo(BaseEgoVehicle):
             accel = None
 
         if accel is not None:
-            new_speed = max(0.0, speed + accel * self.time_step)
-            sim.setSpeed(veh_id, new_speed)
+            new_speed = max(0.0, speed + accel * time_step)
+            self.sim.vehicle.setSpeed(self.ego_id, new_speed)
             return
 
         # LANE CHANGE
-        lane_index = sim.getLaneIndex(veh_id)
+        lane_index = self.sim.vehicle.getLaneIndex(self.ego_id)
 
         # ---- change left ----
         if action == DiscreteActions.LCL:
-            sim.changeLane(veh_id, lane_index + 1, self.lc_duration)
+            self.sim.vehicle.changeLane(self.ego_id, lane_index + 1, self.lc_duration)
 
         # ---- change right ----
         elif action == DiscreteActions.LCR:
-            sim.changeLane(veh_id, lane_index - 1, self.lc_duration)
+            self.sim.vehicle.changeLane(self.ego_id, lane_index - 1, self.lc_duration)

@@ -1,34 +1,44 @@
-from sumo_rl_ego.configs.config import SumoConfig
+import traci
+import numpy as np
+from sumo_rl_ego.env.config import SumoConfig
 from sumo_rl_ego.env.sumo_env import SumoEnv
-
-from sumo_rl_ego.env.ego.discrete_long_lat_ego import DiscreteLongLatEgo
-from sumo_rl_ego.env.observation.kin_lane_dist_observation import KinLaneDistObservation
-from sumo_rl_ego.env.reward.higway_cruise_reward import HighwayCruiseReward
 
 
 
 config = SumoConfig(
     sumocfg_file="networks/highway_fast/highway.sumocfg",
     use_gui=True,
-    auto_start=False,
+    #auto_start=False,
     ego_id="ego",
-    ego_class=DiscreteLongLatEgo,
-    obs_class=KinLaneDistObservation,
-    reward_class=HighwayCruiseReward,
-    #extra_sumo_args=["--quit-on-end", "true"],
+    #seed=42,
+    time_step=0.1,
+    # extra_sumo_args=[
+    #     "--delay", "100"
+    # ],
 )
 
 env = SumoEnv(config)
 
 obs, _ = env.reset()
+traci.gui.trackVehicle("View #0", "ego")
+traci.gui.setZoom("View #0", 2000)
+input("Premi invio per chiudere...") # per debuggare, da rimuovere
 
-for _ in range(10000):
+
+for _ in range(1000):
     action = env.action_space.sample()
+
     obs, reward, terminated, truncated, info = env.step(action)
 
-    print("Action:", action, "Obs:", obs, "Reward:", reward, "Info:", info)
-
     if terminated or truncated:
-        break
+        print("Episode ended. Resetting environment.")
+        print("\nInfo:", info)
+        env.config.seed += 1  # Change seed for next episode
+        obs = env.reset()
+        input("Premi invio per chiudere...") # per debuggare, da rimuovere
 
+    traci.gui.trackVehicle("View #0", "ego")
+
+
+print("test ended.")
 env.close()
