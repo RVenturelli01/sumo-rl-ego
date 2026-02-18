@@ -5,7 +5,7 @@ from sumo_rl_ego.env.config import SumoConfig
 from sumo_rl_ego.env.sumo_env import SumoEnv
 
 from components.my_ego import MyEgo
-from components.my_observation import MyObservation
+from experiments.components.my_observation_v2 import MyObservation
 from components.my_reward import MyReward
 from components.my_kpi import MyKPI
 
@@ -40,7 +40,7 @@ model = DQN(
     target_update_interval=2000,
     exploration_fraction=0.2,
     exploration_final_eps=0.05,
-    policy_kwargs=dict(net_arch=[32, 32]),
+    policy_kwargs=dict(net_arch=[32]),
     verbose=1,
     tensorboard_log=None,
 )

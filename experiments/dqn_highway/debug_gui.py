@@ -6,17 +6,17 @@ import numpy as np
 from sumo_rl_ego.env.config import SumoConfig
 from sumo_rl_ego.env.sumo_env import SumoEnv
 
-from components.my_ego import MyEgo
-from components.my_observation import MyObservation
-from components.my_reward import MyReward
-from components.my_kpi import MyKPI
+from experiments.modules.my_ego import MyEgo
+from experiments.modules.my_observation_v2 import MyObservation
+from experiments.modules.my_reward import MyReward
+from experiments.modules.my_kpi import MyKPI
 
 
 config = SumoConfig(
     sumocfg_file="networks/highway_fast/highway.sumocfg",
     use_gui=True,
     ego_id="ego",
-    time_step=0.1,
+    time_step=0.5,
 )
 
 
