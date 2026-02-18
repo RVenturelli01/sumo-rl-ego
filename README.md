@@ -12,9 +12,9 @@ SumoEnv
     ├── EgoVehicle       → translates action into vehicle control
     ├── Observation      → builds RL observation
     ├── Reward           → computes reward
-    └── DoneCondition    → checks termination
+    └── Kpi              → kpi tracker
     ↓
-Observation, Reward, Done → returned to Agent
+Observation, Reward, Terminated, Truncated, info → returned to Agent
 ```
 
 made by Riccardo Venturelli
