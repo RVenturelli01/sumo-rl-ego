@@ -6,57 +6,47 @@ class MyReward(BaseReward):
 
     def __init__(
         self,
-        target_speed: float = 30.0,
-        w_speed: float = 5.0,
-        w_offroad: float = -100.0,
-        w_crash: float = -100.0,
-        w_lane_change: float = 0.0,
-        w_arrived: float = 1000.0
+        w_speed=5.0,
+        w_crash=-100.0,
+        w_offroad=-100.0,
+        w_lane_change=-0.2,
+        w_step=-1,
+        w_arrived=100.0,
     ):
-        self.target_speed = target_speed
         self.w_speed = w_speed
-        self.w_offroad = w_offroad
         self.w_crash = w_crash
+        self.w_offroad = w_offroad
         self.w_lane_change = w_lane_change
+        self.w_step = w_step
         self.w_arrived = w_arrived
 
 
     def compute(self, action, info):
-
         if info["ep_status"]["truncated"] or info["ep_status"]["terminated"]:
-            return self.compute_terminal(action, info)  
+            return self.compute_terminal(info)
 
-        reward = -1
+        reward = self.w_step
 
+        # progress reward
         speed = self.sim.vehicle.getSpeed(self.ego_id)
+        reward += self.w_speed*speed/30  # normalize by a reasonable max speed
 
-        speed_error = abs(speed - self.target_speed)
-        sigma = self.target_speed * 0.3
-        speed_reward = np.exp(-(speed_error**2) / (2 * sigma**2))
-
-        reward += self.w_speed * speed_reward
-        reward = speed/10
-
-        if action == 6 or action == 7:  # lane change
+        # lane change penalty
+        if action in (3, 4):
             reward += self.w_lane_change
 
         return reward
 
-
-    def compute_terminal(self, action, info):
-
+    def compute_terminal(self, info):
         reward = 0.0
 
-        if info.get("collided", False):
+        if info["ego_status"]["collided"]:
             reward += self.w_crash
 
-        elif info.get("off_road", False):
+        elif info["ego_status"]["off_road"]:
             reward += self.w_offroad
 
-        elif info.get("arrived", False):
-            max_steps = self.sim.config.max_steps
-            step_count = info["ep_status"]["step_count"]
-            reward += self.w_arrived * (max_steps - step_count) / max_steps
+        elif info["ego_status"]["arrived"]:
+            reward += self.w_arrived
 
         return reward
-    

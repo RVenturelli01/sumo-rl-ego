@@ -136,7 +136,7 @@ class SumoSimulation:
             }
 
     def enable_rl_control(self, ego_id):
-        traci.vehicle.setSpeedMode(ego_id, 7)
+        traci.vehicle.setSpeedMode(ego_id, 0)
         traci.vehicle.setLaneChangeMode(ego_id, 0)
         
 

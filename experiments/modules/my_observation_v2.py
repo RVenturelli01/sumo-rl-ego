@@ -14,9 +14,9 @@ Observation:
 class MyObservation(BaseObservation):
 
     def __init__(self,
+                 ego_speed_bins=[5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
                  distance_bins=[10, 20, 30, 40],
                  ego_speed_veh_bins=[5, 10, 15, 20, 25, 30],
-                 ego_speed_bins=[5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
                  ):
         
         self.distance_bins = distance_bins
@@ -45,10 +45,10 @@ class MyObservation(BaseObservation):
         # -----------------------
         # LATERAL
         # -----------------------
-        left_front = self.closest(self.sim.vehicle.getNeighbors(self.ego_id, 0b011))
-        left_back  = self.closest(self.sim.vehicle.getNeighbors(self.ego_id, 0b001))
-        right_front = self.closest(self.sim.vehicle.getNeighbors(self.ego_id, 0b111))
-        right_back  = self.closest(self.sim.vehicle.getNeighbors(self.ego_id, 0b101))
+        left_front = self.closest(self.sim.vehicle.getNeighbors(self.ego_id, 0b010))
+        left_back  = self.closest(self.sim.vehicle.getNeighbors(self.ego_id, 0b000))
+        right_front = self.closest(self.sim.vehicle.getNeighbors(self.ego_id, 0b011))
+        right_back  = self.closest(self.sim.vehicle.getNeighbors(self.ego_id, 0b001))
 
         # -----------------------
         # SAME LANE

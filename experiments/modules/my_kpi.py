@@ -7,7 +7,7 @@ class MyKPI(BaseKPI):
         self.ego_speed_history = []
 
 
-    def compute_kpis(self):
+    def compute_kpi(self):
         self.left_front = self.sim.vehicle.getNeighbors(self.ego_id, 0b010)
         self.left_back = self.sim.vehicle.getNeighbors(self.ego_id, 0b000)
         self.right_front = self.sim.vehicle.getNeighbors(self.ego_id, 0b011)

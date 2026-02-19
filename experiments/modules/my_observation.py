@@ -8,15 +8,15 @@ Observation:
 - lane availability (left, right)
 - distance bin to leader (near, mid, far)
 - distance bin to follower (near, mid, far)
-- ego speed bin (0-5 m/s, 5-10 m/s, 10-15 m/s, 15-20 m/s, >20 m/s)
+- ego speed bin (0-5 m/s, 5-10 m/s, 10-15 m/s, ...)
 '''
 
 
 class MyObservation(BaseObservation):
 
     def __init__(self,
-                near=15,
-                far=40,
+                near=30,
+                far=50,
                 lane_gap=10,
                 speed_bins=[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
         ):

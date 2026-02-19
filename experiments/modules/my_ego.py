@@ -4,14 +4,11 @@ from sumo_rl_ego.ego.base_ego import BaseEgo
 
 
 class DiscreteActions(IntEnum):
-    N = 0      # no-op
-    SS = 1     # same speed
-    ACC_1 = 2  # +1 m/s^2
-    ACC_2 = 3  # +2 m/s^2
-    DEC_1 = 4  # -1 m/s^2
-    DEC_2 = 5  # -1 m/s^2
-    LCL = 6    # lane change left
-    LCR = 7    # lane change right
+    SS = 0     # same speed
+    ACC = 1    # +1 m/s^2
+    DEC = 2    # -2 m/s^2
+    LCL = 3    # lane change left
+    LCR = 4    # lane change right
 
 
 class MyEgo(BaseEgo):
@@ -30,23 +27,15 @@ class MyEgo(BaseEgo):
 
         speed = self.sim.vehicle.getSpeed(self.ego_id)
 
-        # NO-OP
-        if action == DiscreteActions.N:
-            return
-
         # SAME SPEED
         if action == DiscreteActions.SS:
-            self.sim.vehicle.setSpeed(self.id, speed)
+            self.sim.vehicle.setSpeed(self.ego_id, speed)
             return
 
         # LONGITUDINAL CONTROL
-        if action == DiscreteActions.ACC_1:
+        if action == DiscreteActions.ACC:
             accel = 1.0
-        elif action == DiscreteActions.ACC_2:
-            accel = 2.0
-        elif action == DiscreteActions.DEC_1:
-            accel = -1.0
-        elif action == DiscreteActions.DEC_2:
+        elif action == DiscreteActions.DEC:
             accel = -2.0
         else:
             accel = None
@@ -66,3 +55,6 @@ class MyEgo(BaseEgo):
         # ---- change right ----
         elif action == DiscreteActions.LCR:
             self.sim.vehicle.changeLane(self.ego_id, lane_index - 1, self.lc_duration)
+
+    def print_action(self, action):
+        return DiscreteActions(action).name

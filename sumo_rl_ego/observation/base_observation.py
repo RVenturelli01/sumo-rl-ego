@@ -8,11 +8,16 @@ class BaseObservation(ABC):
     def build(self):
         pass
 
+    @abstractmethod
+    def print_obs(self, obs):
+        pass
+
     def setSumoSimulation(self, sim):
         self.sim = sim
 
     def setEgoId(self, ego_id):
         self.ego_id = ego_id
+
         
 
 class DefaultObservation(BaseObservation):
@@ -23,4 +28,7 @@ class DefaultObservation(BaseObservation):
 
     def build(self):
         return self.observation_space.sample()
+    
+    def print_obs(self, obs):
+        print("Default observation: ", obs)
     

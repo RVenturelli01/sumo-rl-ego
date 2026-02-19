@@ -9,6 +9,10 @@ class BaseEgo(ABC):
     def apply_action(self, action):
         pass
 
+    @abstractmethod
+    def print_action(self, action):
+        pass
+
     def setSumoSimulation(self, sim):
         self.sim = sim
 
@@ -29,3 +33,6 @@ class DefaultEgo(BaseEgo):
 
     def apply_action(self, action):
         return
+    
+    def print_action(self, action):
+        return DiscreteActions(action).name
