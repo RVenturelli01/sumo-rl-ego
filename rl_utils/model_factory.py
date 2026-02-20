@@ -8,6 +8,8 @@ ALGOS = {
 def build_model(env, cfg: dict):
     algo = ALGOS[cfg["algorithm"]]
 
+    env.reset(seed=cfg["env"]["seed"])
+
     model = algo(
         policy=cfg["policy"],
         env=env,

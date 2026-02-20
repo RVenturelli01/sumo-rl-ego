@@ -38,4 +38,4 @@ class DefaultEgoController(BaseEgoController):
         return
     
     def print_action(self, action):
-        return DiscreteActions(action).name
+        print(f"Action: {DiscreteActions(action).name}")

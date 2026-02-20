@@ -6,11 +6,12 @@ meta:
 
 
 # Environment description (for documentation purposes only)
-env_description:
+env:
   name: highway-3lanes
   observation: 
   action:
   reward: finish the route as fast as possible, while avoiding collisions
+  seed: 0
 
 
 sumo_config:
@@ -18,7 +19,7 @@ sumo_config:
   ego_id: ego
   time_step: 0.5
   max_steps: 50
-  sumo_seed: 0
+  seed: 0
 
 
 algorithm: DQN
@@ -29,8 +30,8 @@ model:
   learning_rate: 3.0e-4  # must be float
   gamma: 0.98
 
-  buffer_size: 1000
-  learning_starts: 500
+  buffer_size: 30000
+  learning_starts: 1000
   batch_size: 64
 
   train_freq: 1
@@ -41,11 +42,12 @@ model:
   exploration_final_eps: 0.05
 
   policy_kwargs:
-    net_arch: [64, 64]
+    net_arch: [32, 32]
 
   verbose: 1
+  seed: 0
 
 
 training:
-  total_timesteps: 1000
+  total_timesteps: 30000
   log_interval: 10

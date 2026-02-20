@@ -1,10 +1,13 @@
 from sumo_rl_ego.metrics.base import BaseMetricsTracker
+from statistics import mean, pstdev 
+
 
 
 class MyMetrics(BaseMetricsTracker):
-    def __init__(self):
+    def __init__(self, window=0):
         self.reset_global()
         self.reset()
+        self.window = window
 
     # ======================
     # RESET
@@ -51,11 +54,10 @@ class MyMetrics(BaseMetricsTracker):
             self.ep_lane_changes += 1
 
         # velocità
-        v = 0.0
-        try:
+        if self.sim.ego_exists(self.ego_id):
             v = self.sim.vehicle.getSpeed(self.ego_id)
-        except Exception:
-            pass
+        else:
+            v = 0.0
 
         self.speed_sum += v
 
@@ -110,15 +112,32 @@ class MyMetrics(BaseMetricsTracker):
         if self.total_episodes == 0:
             return {}
 
+        # helper safe
+        def safe_std(x):
+            return pstdev(x) if len(x) > 1 else 0.0
+        
+        def slice(self, x):
+            return x[-self.window:] if self.window > 0 else x
+
         return {
             "episodes": self.total_episodes,
-            "mean_reward": sum(self.global_rewards) / self.total_episodes,
-            "mean_length": sum(self.global_lengths) / self.total_episodes,
-            "mean_speed": sum(self.global_avg_speeds) / self.total_episodes,
-            "success_rate": sum(self.global_success) / self.total_episodes,
-            "mean_collisions": sum(self.global_collisions) / self.total_episodes,
-            "mean_offroad": sum(self.global_offroad) / self.total_episodes,
+
+            "ep_rew_mean": mean(slice(self, self.global_rewards)),
+            "ep_rew_std": safe_std(slice(self, self.global_rewards)),
+
+            "ep_length_mean": mean(slice(self, self.global_lengths)),
+            "ep_length_std": safe_std(slice(self, self.global_lengths)),
+
+            "ep_avg_speed_mean": mean(slice(self, self.global_avg_speeds)),
+            "ep_avg_speed_std": safe_std(slice(self, self.global_avg_speeds)),
+
+            "ep_success_rate": mean(slice(self, self.global_success)),
+
+            "ep_collision_rate": mean(slice(self, self.global_collisions)),
+            
+            "ep_offroad_rate": mean(slice(self, self.global_offroad)),
         }
+
 
     # ======================
     # HISTORY EXPORT

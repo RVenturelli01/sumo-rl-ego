@@ -30,7 +30,7 @@ env = SumoEnv(sumo_cfg,
               ego_controller=MyEgo(), 
               obs_builder=MyObservation(), 
               reward_function=MyReward(), 
-              metrics_tracker=MyMetrics())
+              metrics_tracker=MyMetrics(window=100))
 
 # Optional sanity check
 check_env(env, warn=True)

@@ -57,4 +57,4 @@ class MyEgo(BaseEgoController):
             self.sim.vehicle.changeLane(self.ego_id, lane_index - 1, self.lc_duration)
 
     def print_action(self, action):
-        return DiscreteActions(action).name
+        print(f"Action: {DiscreteActions(action).name}")

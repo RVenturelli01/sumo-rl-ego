@@ -19,7 +19,7 @@ class SumoConfig:
         # simulation parameters
         max_steps: int = 1000,
         time_step: float = 0.1,
-        sumo_seed: int = random.randint(0, 10_000_000),
+        seed: int = random.randint(0, 10_000_000),
     ):
         self.sumocfg_file = sumocfg_file
         self.use_gui = use_gui
@@ -32,7 +32,7 @@ class SumoConfig:
 
         self.max_steps = max_steps
         self.time_step = time_step
-        self.sumo_seed = sumo_seed
+        self.seed = seed
 
     @property
     def sumo_binary(self):
@@ -44,7 +44,7 @@ class SumoConfig:
             self.sumo_binary,
             "-c", self.sumocfg_file,
             "--step-length", str(self.time_step),
-            "--seed", str(self.sumo_seed),
+            "--seed", str(self.seed),
         ]
 
         if self.auto_start:
@@ -59,5 +59,4 @@ class SumoConfig:
         cmd.extend(self.extra_sumo_args)
 
         #print("Comando SUMO:", " ".join(cmd))
-
         return cmd

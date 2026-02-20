@@ -49,7 +49,7 @@ class SumoEnv(gym.Env):
         super().reset(seed=seed) 
 
         # ensure different seed at each reset for more varied episodes
-        self.config.sumo_seed += 1  
+        self.config.seed += 1  
         
         self.sim.reset()
         self.ego_controller.reset()
