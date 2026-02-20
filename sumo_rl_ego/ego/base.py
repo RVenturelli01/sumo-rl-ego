@@ -3,7 +3,7 @@ from enum import IntEnum
 from gymnasium.spaces import Discrete
 
 
-class BaseEgo(ABC):
+class BaseEgoController(ABC):
 
     @abstractmethod
     def apply_action(self, action):
@@ -13,10 +13,13 @@ class BaseEgo(ABC):
     def print_action(self, action):
         pass
 
-    def setSumoSimulation(self, sim):
+    def reset(self):
+        pass
+
+    def set_sumo_simulation(self, sim):
         self.sim = sim
 
-    def setEgoId(self, ego_id):
+    def set_ego_id(self, ego_id):
         self.ego_id = ego_id
 
 
@@ -26,7 +29,7 @@ class DiscreteActions(IntEnum):
     N = 0      # no-op
 
 
-class DefaultEgo(BaseEgo):
+class DefaultEgoController(BaseEgoController):
 
     def __init__(self):
         self.action_space = Discrete(len(DiscreteActions))

@@ -1,8 +1,8 @@
-from sumo_rl_ego.reward.base_reward import BaseReward
+from sumo_rl_ego.reward.base import BaseRewardFunction
 import numpy as np
 
 
-class MyReward(BaseReward):
+class MyReward(BaseRewardFunction):
 
     def __init__(
         self,

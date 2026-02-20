@@ -3,10 +3,11 @@ from pathlib import Path
 from sumo_rl_ego.env.config import SumoConfig
 from sumo_rl_ego.env.sumo_env import SumoEnv
 
+from experiments.modules.my_callback import MyCallback
 from experiments.modules.my_ego import MyEgo
-from experiments.modules.my_observation_v4 import MyObservation
+from experiments.modules.my_observation import MyObservation
 from experiments.modules.my_reward import MyReward
-from experiments.modules.my_kpi import MyKPI
+from experiments.modules.my_metrics import MyMetrics
 
 from rl_utils.config_loader import load_rl_config
 from rl_utils.model_factory import build_model
@@ -25,10 +26,11 @@ cfg = load_rl_config(CFG_PATH)
 sumo_cfg = SumoConfig(**cfg["sumo_config"])
 
 # Build environment
-ego = MyEgo()
-obs_builder = MyObservation()
-reward_fn = MyReward()
-env = SumoEnv(sumo_cfg, ego=ego, obs_builder=obs_builder, reward_fn=reward_fn)
+env = SumoEnv(sumo_cfg, 
+              ego_controller=MyEgo(), 
+              obs_builder=MyObservation(), 
+              reward_function=MyReward(), 
+              metrics_tracker=MyMetrics())
 
 # Optional sanity check
 check_env(env, warn=True)
@@ -37,8 +39,6 @@ check_env(env, warn=True)
 model = build_model(env, cfg)
 
 # Train
-train(model, cfg, env, root=REPO_DIR)
-
-
+train(model, cfg, env, root=REPO_DIR, callback=MyCallback)
 
 

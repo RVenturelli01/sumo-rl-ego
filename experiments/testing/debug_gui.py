@@ -6,11 +6,11 @@ from sumo_rl_ego.env.config import SumoConfig
 from sumo_rl_ego.env.sumo_env import SumoEnv
 
 from experiments.modules.my_ego import MyEgo
-from experiments.modules.my_observation_v4 import MyObservation
+from experiments.modules.my_observation import MyObservation
 from experiments.modules.my_reward import MyReward
-from experiments.modules.my_kpi import MyKPI
+from experiments.modules.my_metrics import MyMetrics
 
-from sumo_rl_ego.rl.config_loader import load_rl_config
+from rl_utils.config_loader import load_rl_config
 from experiments.policies.sb3_policy import SB3Policy
 from stable_baselines3.common.env_checker import check_env
 
@@ -27,10 +27,11 @@ cfg = load_rl_config(CFG_PATH)
 sumo_cfg = SumoConfig(**cfg["sumo_config"], use_gui=True)
 
 # Build environment
-ego = MyEgo()
-obs_builder = MyObservation()
-reward_fn = MyReward()
-env = SumoEnv(sumo_cfg, ego=ego, obs_builder=obs_builder, reward_fn=reward_fn)
+env = SumoEnv(sumo_cfg, 
+              ego_controller=MyEgo(), 
+              obs_builder=MyObservation(), 
+              reward_function=MyReward(), 
+              metrics_tracker=MyMetrics())
 
 # get the trained model
 model = SB3Policy(model_path=MODEL_PATH, algo=cfg["algorithm"])
@@ -40,7 +41,7 @@ obs, _ = env.reset()
 
 # opzionale: fai seguire l'ego
 traci.gui.trackVehicle("View #0", "ego")
-traci.gui.setZoom("View #0", 1800)
+traci.gui.setZoom("View #0", 2000)
 input("Premi invio per chiudere...") 
 
 # Rollout loop
@@ -51,9 +52,9 @@ while True:
     action = model.predict(obs)
 
     print("="*50)
-    print(f"Action: {ego.print_action(action)}")
-    print(f"Ego real speed: {traci.vehicle.getSpeed('ego'):.2f} m/s")
-    print(obs_builder.print_obs(obs))
+    print(f"Action: {env.ego_controller.print_action(action)}")
+    print("-"*50)
+    print(env.obs_builder.print_obs(obs))
 
     obs, reward, terminated, truncated, info = env.step(action)
 

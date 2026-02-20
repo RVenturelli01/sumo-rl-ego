@@ -2,31 +2,34 @@ from abc import ABC, abstractmethod
 from gymnasium.spaces import MultiDiscrete
 
 
-class BaseObservation(ABC):
+class BaseObservationBuilder(ABC):
 
     @abstractmethod
-    def build(self):
+    def build_obs(self):
         pass
 
     @abstractmethod
     def print_obs(self, obs):
         pass
 
-    def setSumoSimulation(self, sim):
+    def reset(self):
+        pass
+    
+    def set_sumo_simulation(self, sim):
         self.sim = sim
 
-    def setEgoId(self, ego_id):
+    def set_ego_id(self, ego_id):
         self.ego_id = ego_id
 
         
 
-class DefaultObservation(BaseObservation):
+class DefaultObservationBuilder(BaseObservationBuilder):
     
     def __init__(self):
 
         self.observation_space = MultiDiscrete([2])
 
-    def build(self):
+    def build_obs(self):
         return self.observation_space.sample()
     
     def print_obs(self, obs):

@@ -7,9 +7,9 @@ from sumo_rl_ego.env.config import SumoConfig
 from sumo_rl_ego.env.sumo_env import SumoEnv
 
 from experiments.modules.my_ego import MyEgo
-from experiments.modules.my_observation_v4 import MyObservation
+from experiments.modules.my_observation import MyObservation
 from experiments.modules.my_reward import MyReward
-from experiments.modules.my_kpi import MyKPI
+from experiments.modules.my_metrics import MyKPI
 
 
 config = SumoConfig(

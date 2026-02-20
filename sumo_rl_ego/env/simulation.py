@@ -61,10 +61,9 @@ class SumoSimulation:
             traci.close()
             self.started = False
 
-
     def simulationStep(self):
         traci.simulationStep()
-
+        
     # =========================================================
     # OVERRIDES
     # =========================================================

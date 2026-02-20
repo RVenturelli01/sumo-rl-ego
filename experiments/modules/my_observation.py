@@ -1,79 +1,122 @@
 import numpy as np
 from gymnasium.spaces import Box
-from sumo_rl_ego.observation.base_observation import BaseObservation
-from gymnasium.spaces import MultiDiscrete
-
-'''
-Observation:
-- lane availability (left, right)
-- distance bin to leader (near, mid, far)
-- distance bin to follower (near, mid, far)
-- ego speed bin (0-5 m/s, 5-10 m/s, 10-15 m/s, ...)
-'''
+from sumo_rl_ego.observation.base import BaseObservationBuilder
 
 
-class MyObservation(BaseObservation):
+class MyObservation(BaseObservationBuilder):
 
     def __init__(self,
-                near=30,
-                far=50,
-                lane_gap=10,
-                speed_bins=[5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-        ):
+                 max_speed=50.0,
+                 max_distance=100.0,
+                 max_rel_speed=30.0,
+                 lane_gap=10):
 
-        self.near = near
-        self.far = far
+        self.max_speed = max_speed
+        self.max_distance = max_distance
+        self.max_rel_speed = max_rel_speed
         self.lane_gap = lane_gap
-        self.speed_bins = speed_bins    
 
-        # numero bin velocità = len(bins)+1
-        n_speed = len(speed_bins) + 1
+        # 9 features continue
+        self.observation_space = Box(
+            low=np.array([
+                0.0,        # ego speed
+                0.0, 0.0,   # lane availability
+                0.0, -1.0,  # front same lane (dist, rel speed)
+                0.0, -1.0,  # front left
+                0.0, -1.0   # front right
+            ], dtype=np.float32),
+            high=np.array([
+                1.0,
+                1.0, 1.0,
+                1.0, 1.0,
+                1.0, 1.0,
+                1.0, 1.0
+            ], dtype=np.float32),
+            dtype=np.float32
+        )
 
-        self.observation_space = MultiDiscrete([
-            2,  # left free
-            2,  # right free
-            3,  # leader dist
-            3,  # follower dist
-            n_speed  # ego speed
-        ])
+    def build_obs(self):
+        obs = []
 
-
-    def build(self):
+        ego_speed = self.sim.vehicle.getSpeed(self.ego_id)
+        ego_speed_norm = ego_speed / self.max_speed
+        obs.append(np.clip(ego_speed_norm, 0, 1))
 
         # lane availability
-        left_free  = self.lane_free("left", self.lane_gap)
-        right_free = self.lane_free("right", self.lane_gap)
+        left_free  = float(self.lane_free("left", self.lane_gap))
+        right_free = float(self.lane_free("right", self.lane_gap))
+        obs.extend([left_free, right_free])
 
-        # distanze
-        d_front, d_back = self.front_back_distances()
+        # FRONT SAME LANE
+        front = self.sim.vehicle.getLeader(self.ego_id)
+        if front is not None and front[0] in self.sim.vehicle.getIDList():
+            front_id, d_front = front
+            v_front = self.sim.vehicle.getSpeed(front_id)
+            rel_speed_front = v_front - ego_speed
+        else:
+            d_front = self.max_distance
+            rel_speed_front = self.max_rel_speed
 
-        leader_bin   = self.distance_bin(d_front, self.near, self.far)
-        follower_bin = self.distance_bin(d_back, self.near, self.far)
+        obs.append(self.norm_dist(d_front))
+        obs.append(self.norm_rel_speed(rel_speed_front))
 
-        ego_speed_bin = self.ego_speed_bin(self.speed_bins)
+        # FRONT LEFT
+        front_left = self.sim.vehicle.getNeighbors(self.ego_id, 0b010)
+        if front_left:
+            front_left_id, d_front_left = front_left[0]
+            v_front_left = self.sim.vehicle.getSpeed(front_left_id)
+            rel_speed_front_left = v_front_left - ego_speed
+        else:
+            d_front_left = self.max_distance
+            rel_speed_front_left = self.max_rel_speed
 
-        return np.array([
-            left_free,
-            right_free,
-            leader_bin,
-            follower_bin,
-            ego_speed_bin
-        ], dtype=np.int32)
+        obs.append(self.norm_dist(d_front_left))
+        obs.append(self.norm_rel_speed(rel_speed_front_left))
+
+        # FRONT RIGHT
+        front_right = self.sim.vehicle.getNeighbors(self.ego_id, 0b011)
+        if front_right:
+            front_right_id, d_front_right = front_right[0]
+            v_front_right = self.sim.vehicle.getSpeed(front_right_id)
+            rel_speed_front_right = v_front_right - ego_speed
+        else:
+            d_front_right = self.max_distance
+            rel_speed_front_right = self.max_rel_speed
+
+        obs.append(self.norm_dist(d_front_right))
+        obs.append(self.norm_rel_speed(rel_speed_front_right))
+
+        return np.array(obs, dtype=np.float32)
+
+
+    def print_obs(self, obs):
+        ego_speed = obs[0] * self.max_speed
+        left_free = bool(obs[1])
+        right_free = bool(obs[2])
+        d_front = obs[3] * self.max_distance
+        rel_speed_front = obs[4] * self.max_rel_speed
+        d_front_left = obs[5] * self.max_distance
+        rel_speed_front_left = obs[6] * self.max_rel_speed
+        d_front_right = obs[7] * self.max_distance
+        rel_speed_front_right = obs[8] * self.max_rel_speed
+
+        print(f"Ego speed: {ego_speed:.2f} m/s")
+        print(f"Lane availability Left, Right: | {left_free} | {right_free} |")
+        print(f"Distances left, front, right: | {d_front_left:.2f} m | {d_front:.2f} m | {d_front_right:.2f} m |")
+        print(f"Relative speed left, front, right: | {rel_speed_front_left:.2f} m/s | {rel_speed_front:.2f} m/s | {rel_speed_front_right:.2f} m/s |")
+        
     
-    
-    # ==========================================================
-    # Helpers
-    # ==========================================================
 
-    def front_back_distances(self):
-        leader = self.sim.vehicle.getLeader(self.ego_id)
-        follower = self.sim.vehicle.getFollower(self.ego_id)
+    # ------------------------
+    # Utility functions
+    # ------------------------
+    def norm_dist(self, d):
+        d = np.clip(d, 0, self.max_distance)
+        return d / self.max_distance
 
-        d_front = leader[1] if leader else float("inf")
-        d_back  = follower[1] if follower else float("inf")
-
-        return d_front, d_back
-
+    def norm_rel_speed(self, v):
+        v = np.clip(v, -self.max_rel_speed, self.max_rel_speed)
+        return v / self.max_rel_speed
 
     def lane_free(self, direction, safety_gap):
 
@@ -102,21 +145,3 @@ class MyObservation(BaseObservation):
             if gap < safety_gap:
                 return 0
         return 1
-    
-
-    def distance_bin(self, d, near, far):
-        if d < near:
-            return 0   # near
-        elif d < far:
-            return 1   # mid
-        else:
-            return 2   # far
-    
-
-    def ego_speed_bin(self, bins):
-        v = self.sim.vehicle.getSpeed(self.ego_id)
-
-        for i, b in enumerate(bins):
-            if v < b:
-                return i
-        return len(bins)

@@ -1,6 +1,6 @@
 from gymnasium.spaces import Discrete
 from enum import IntEnum
-from sumo_rl_ego.ego.base_ego import BaseEgo
+from sumo_rl_ego.ego.base import BaseEgoController
 
 
 class DiscreteActions(IntEnum):
@@ -11,7 +11,7 @@ class DiscreteActions(IntEnum):
     LCR = 4    # lane change right
 
 
-class MyEgo(BaseEgo):
+class MyEgo(BaseEgoController):
 
     def __init__(self, 
                  lc_duration=0):

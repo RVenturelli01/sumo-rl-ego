@@ -1,75 +1,92 @@
 import gymnasium as gym
+from sumo_rl_ego.env.config import SumoConfig
 from sumo_rl_ego.env.simulation import SumoSimulation 
-from sumo_rl_ego.ego.base_ego import DefaultEgo
-from sumo_rl_ego.observation.base_observation import DefaultObservation
-from sumo_rl_ego.reward.base_reward import DefaultReward
-from sumo_rl_ego.kpi.base_kpi import DefaultKPI
+from sumo_rl_ego.ego.base import DefaultEgoController
+from sumo_rl_ego.observation.base import DefaultObservationBuilder
+from sumo_rl_ego.reward.base import DefaultRewardFunction
+from sumo_rl_ego.metrics.base import DefaultMetricsTracker
 
 
 class SumoEnv(gym.Env):
-    def __init__(self, config, ego=None, obs_builder=None, reward_fn=None, kpi_tracker=None):
+    def __init__(self, 
+                 config = None, 
+                 ego_controller=None, 
+                 obs_builder=None, 
+                 reward_function=None, 
+                 metrics_tracker=None):
+        
         super().__init__()
 
-        self.config = config
-        self.sim = SumoSimulation(config)
 
         # --- DEFAULT FALLBACKS ---
-        self.ego = ego or DefaultEgo()
-        self.obs_builder = obs_builder or DefaultObservation()
-        self.reward_fn = reward_fn or DefaultReward()
-        self.kpi_tracker = kpi_tracker or DefaultKPI()
+        self.config = config or SumoConfig()
+        self.ego_controller = ego_controller or DefaultEgoController()
+        self.obs_builder = obs_builder or DefaultObservationBuilder()
+        self.reward_function = reward_function or DefaultRewardFunction()
+        self.metrics_tracker = metrics_tracker or DefaultMetricsTracker()
+        self.sim = SumoSimulation(self.config)
 
-        self.ego.setSumoSimulation(self.sim)
-        self.obs_builder.setSumoSimulation(self.sim)    
-        self.reward_fn.setSumoSimulation(self.sim)
-        self.kpi_tracker.setSumoSimulation(self.sim)
+        self.ego_controller.set_sumo_simulation(self.sim)
+        self.obs_builder.set_sumo_simulation(self.sim)    
+        self.reward_function.set_sumo_simulation(self.sim)
+        self.metrics_tracker.set_sumo_simulation(self.sim)
 
-        self.ego.setEgoId(config.ego_id)
-        self.obs_builder.setEgoId(config.ego_id)    
-        self.reward_fn.setEgoId(config.ego_id)
-        self.kpi_tracker.setEgoId(config.ego_id)
+        self.ego_controller.set_ego_id(self.config.ego_id)
+        self.obs_builder.set_ego_id(self.config.ego_id)    
+        self.reward_function.set_ego_id(self.config.ego_id)
+        self.metrics_tracker.set_ego_id(self.config.ego_id)
 
 
-        self.action_space = self.ego.action_space
+        self.action_space = self.ego_controller.action_space
         self.observation_space = self.obs_builder.observation_space
 
         self.step_count = 0
 
 
     def reset(self, seed=None, options=None):
-        super().reset(seed=seed)
 
-        self.config.seed += 1  # ensure different seed at each reset for more varied episodes
+        # Call super to set the seed properly for Gymnasium compatibility
+        super().reset(seed=seed) 
+
+        # ensure different seed at each reset for more varied episodes
+        self.config.sumo_seed += 1  
+        
         self.sim.reset()
-        self.sim.wait_for_vehicle(self.ego.ego_id)
+        self.ego_controller.reset()
+        self.obs_builder.reset()
+        self.reward_function.reset()
+        self.metrics_tracker.reset()
+
+        # Wait for ego vehicle to be loaded in the simulation before proceeding
+        self.sim.wait_for_vehicle(self.ego_controller.ego_id)
 
         # disable SUMO's default lane keeping and speed control for the ego vehicle
-        self.sim.enable_rl_control(self.ego.ego_id)
+        self.sim.enable_rl_control(self.ego_controller.ego_id)
 
         self.step_count = 0
 
         # neutral step
         self.sim.simulationStep()
 
-        obs = self.obs_builder.build()
+        obs = self.obs_builder.build_obs()
         return obs, {}
 
 
     def step(self, action):
 
         # Inconsistent env: ego missing before action
-        if not self.sim.ego_exists(self.ego.ego_id):
+        if not self.sim.ego_exists(self.ego_controller.ego_id):
+            print(f"Warning: Ego vehicle is missing before step") 
             return self._inconsistent_EgoStatus("ego_missing_before_step")
 
-        # Apply action safely
-        self._apply_action_safe(action)
+        self.ego_controller.apply_action(action)
 
         # Advance simulation
         self.sim.simulationStep()
         self.step_count += 1
 
-        ego_status = self.sim.get_ego_status(self.ego.ego_id)
-
+        # ego_status: collided, teleported, off_road, arrived, removed_unknown
+        ego_status = self.sim.get_ego_status(self.ego_controller.ego_id)
 
         terminated = (
             ego_status["collided"]
@@ -89,20 +106,26 @@ class SumoEnv(gym.Env):
             "step_count": self.step_count,
             }
         
-        # KPI tracking
-        kpis_step = self.kpi_tracker.compute_kpis()
-
-        # Reward
-        info = {"ego_status": ego_status, "ep_status": ep_status, "kpis_step": kpis_step}
-        reward = self.reward_fn.compute(action, info)
-
+        # Info dict
+        info = {"ego_status": ego_status, "ep_status": ep_status}
+        
         # Observation
         if terminated or truncated:
             obs = self.observation_space.sample()
-            kpis_ep = self.kpi_tracker.compute_episode_kpis()
-            info["kpis_episode"] = kpis_ep
         else:
-            obs = self.obs_builder.build()
+            obs = self.obs_builder.build_obs()
+
+        # Reward
+        reward = self.reward_function.compute(action, info)
+
+        # Metrics 
+        self.metrics_tracker.update_step(obs, action, reward, info)
+        info["metrics"] = self.metrics_tracker.get_step_metrics()
+
+        if terminated or truncated:
+            self.metrics_tracker.end_episode(info)
+            info["episode_metrics"] = self.metrics_tracker.get_episode_metrics()
+            info["global_metrics"] = self.metrics_tracker.get_global_metrics()
 
         return obs, reward, terminated, truncated, info
 
@@ -114,16 +137,6 @@ class SumoEnv(gym.Env):
         truncated = False
         info = {"termination_reason": reason}
         return obs, reward, terminated, truncated, info
-
-
-    def _apply_action_safe(self, action):
-        if not self.sim.ego_exists(self.ego.ego_id):
-            return False
-        try:
-            self.ego.apply_action(action)
-            return True
-        except Exception:
-            return False
 
 
     def close(self):

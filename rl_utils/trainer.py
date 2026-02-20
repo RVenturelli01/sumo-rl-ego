@@ -3,8 +3,7 @@ from datetime import datetime
 import yaml
 from stable_baselines3.common.monitor import Monitor
 
-
-def train(model, cfg: dict, env, root: Path = Path(".")):
+def train(model, cfg: dict, env, root: Path = Path("."), callback=None):
     """
     Train SB3 model with clean structure:
 
@@ -72,6 +71,8 @@ def train(model, cfg: dict, env, root: Path = Path(".")):
     model.learn(
         total_timesteps=total_steps,
         progress_bar=True,
+        callback=callback(),
+        tb_log_name="sumo_rl",
         **learn_kwargs,
     )
 

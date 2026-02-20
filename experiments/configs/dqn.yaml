@@ -18,6 +18,7 @@ sumo_config:
   ego_id: ego
   time_step: 0.5
   max_steps: 50
+  sumo_seed: 0
 
 
 algorithm: DQN

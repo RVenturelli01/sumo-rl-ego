@@ -14,3 +14,13 @@ venv/
 dqn_sumo_agent.zip
 tensorboard_dqn/DQN*
 .vscode/settings.json
+
+# RL artifacts
+logs/
+models/
+checkpoints/
+tensorboard/
+runs/
+*.zip
+*.pth
+*.pt
