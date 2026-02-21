@@ -71,7 +71,7 @@ def train(model, cfg: dict, env, root: Path = Path("."), callback=None):
     model.learn(
         total_timesteps=total_steps,
         progress_bar=True,
-        callback=callback(),
+        callback=callback,
         tb_log_name="sumo_rl",
         **learn_kwargs,
     )

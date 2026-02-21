@@ -113,16 +113,29 @@ class SumoSimulation:
             except traci.TraCIException:
                 exists = False
 
-        collided = ego_id in traci.simulation.getCollidingVehiclesIDList()
-        teleported = ego_id in traci.simulation.getStartingTeleportIDList()
         arrived = ego_id in traci.simulation.getArrivedIDList()
-        off_road = self.off_road or lane_id in ("", None)
 
+        collided = (
+            ego_id in traci.simulation.getCollidingVehiclesIDList() 
+            and not arrived)
+        
+        off_road = (
+            (self.off_road or lane_id in ("", None)) 
+            and not arrived 
+            and not collided )
+
+        teleported = (
+            ego_id in traci.simulation.getStartingTeleportIDList() 
+            and not arrived 
+            and not collided
+            and not off_road)
+        
         ego_removed_unknown = (
             not exists
-            and not collided
-            and not teleported
             and not arrived
+            and not collided
+            and not off_road
+            and not teleported
         )
 
         return {

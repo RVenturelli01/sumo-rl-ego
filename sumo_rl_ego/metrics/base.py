@@ -38,6 +38,18 @@ class DefaultMetricsTracker(BaseMetricsTracker):
     def update_step(self, obs, action, reward, info):
         pass
 
+    def get_step_metrics(self):
+        return {}
+    
+    def end_episode(self, info):
+        pass
+
+    def get_episode_metrics(self):
+        return {}
+    
+    def get_global_metrics(self):
+        return {}
+
     def get_metrics_step(self):
         return {}
 
