@@ -125,7 +125,7 @@ class SumoEnv(gym.Env):
         if terminated or truncated:
             self.metrics_tracker.end_episode(info)
             info["episode_metrics"] = self.metrics_tracker.get_episode_metrics()
-            info["global_metrics"] = self.metrics_tracker.get_global_metrics()
+            info["rollout_metrics"] = self.metrics_tracker.get_rollout_metrics()
 
         return obs, reward, terminated, truncated, info
 

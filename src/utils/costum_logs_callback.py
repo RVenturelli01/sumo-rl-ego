@@ -1,7 +1,8 @@
 
 from stable_baselines3.common.callbacks import BaseCallback
 
-class MyCallback(BaseCallback):
+
+class CostumLogsCallback(BaseCallback):
     def __init__(self, verbose=0):
         super().__init__(verbose)
 
@@ -9,11 +10,11 @@ class MyCallback(BaseCallback):
         infos = self.locals.get("infos", [])
 
         for info in infos:
-            if "global_metrics" in info:
-                metrics = info["global_metrics"]
+            if "rollout_metrics" in info:
+                metrics = info["rollout_metrics"]
 
                 for k, v in metrics.items():
-                    self.logger.record(f"metrics/{k}", v)
+                    self.logger.record(f"{k}", v)
 
         return True
     

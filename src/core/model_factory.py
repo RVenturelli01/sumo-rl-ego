@@ -16,3 +16,12 @@ def build_model(env, cfg: dict):
         **cfg["model"],
     )
     return model
+
+
+def load_model(env, cfg: dict, load_path: str):
+    algo = ALGOS[cfg["algorithm"]]
+
+    env.reset(seed=cfg["env"]["seed"])
+
+    model = algo.load(load_path, env=env)  
+    return model

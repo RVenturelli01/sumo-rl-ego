@@ -1,9 +1,12 @@
-from pathlib import Path
-from datetime import datetime
 import yaml
+from datetime import datetime
+
 from stable_baselines3.common.monitor import Monitor
 
-def train(model, cfg: dict, env, root: Path = Path("."), callback=None):
+from src.utils.project import find_repo_root
+from src.utils.costum_logs_callback import CostumLogsCallback
+
+def train(model, env, cfg):
     """
     Train SB3 model with clean structure:
 
@@ -17,8 +20,7 @@ def train(model, cfg: dict, env, root: Path = Path("."), callback=None):
     - monitor.csv (logs)
     """
 
-    root = Path(root)
-
+    root = find_repo_root()
     models_root = root / "models"
     logs_root = root / "logs" 
 
@@ -71,7 +73,7 @@ def train(model, cfg: dict, env, root: Path = Path("."), callback=None):
     model.learn(
         total_timesteps=total_steps,
         progress_bar=True,
-        callback=callback,
+        callback=CostumLogsCallback(),
         tb_log_name="sumo_rl",
         **learn_kwargs,
     )

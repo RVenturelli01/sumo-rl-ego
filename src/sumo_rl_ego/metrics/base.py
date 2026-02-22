@@ -19,7 +19,7 @@ class BaseMetricsTracker(ABC):
         pass
 
     @abstractmethod
-    def get_global_metrics(self):
+    def get_rollout_metrics(self, window_size):
         pass
         
     def reset(self):

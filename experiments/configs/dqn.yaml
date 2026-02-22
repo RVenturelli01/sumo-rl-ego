@@ -5,49 +5,73 @@ meta:
   tensorboard_log: ./tensorboard_logs/dqn_highway
 
 
-# Environment description (for documentation purposes only)
+
+
 env:
-  name: highway-3lanes
-  observation: 
-  action:
-  reward: finish the route as fast as possible, while avoiding collisions
+  ego:
+    class: modules.egos.highway_discrete_ego.HighwayDiscreteEgo
+    args:
+      dec_value: -4
+  obs:
+    class: modules.observations.speed_dist_ttc_obs.SpeedDistTTCObs
+    args:
+  reward:
+    class: modules.rewards.highway_speed_reward.HighwaySpeedReward
+    args:
+  metrics:
+    class: modules.metrics.my_metrics.MyMetrics
+    args:
   seed: 0
+
+
+
 
 
 sumo_config:
   sumocfg_file: networks/highway_fast/highway.sumocfg
   ego_id: ego
   time_step: 0.5
-  max_steps: 50
+  max_steps: 800
   seed: 0
+
+
 
 
 algorithm: DQN
 policy: MlpPolicy
 
 
+
+
 model:
-  learning_rate: 3.0e-4  # must be float
-  gamma: 0.98
+  learning_rate: 3.0e-4   # velocità update rete | ↑ impara più veloce ma instabile | ↓ più stabile ma lento
+  gamma: 0.99             # peso reward futuri | ↑ più lungimirante | ↓ più miope
 
-  buffer_size: 30000
-  learning_starts: 1000
-  batch_size: 64
+  buffer_size: 30000     # dimensione replay buffer | ↑ più stabilità/diversità | ↓ meno memoria, più rumore
+  learning_starts: 2000   # step prima di iniziare training | ↑ meno rumore iniziale | ↓ impara prima ma instabile
+  batch_size: 128         # campioni per update | ↑ update più stabili | ↓ più veloci ma rumorosi
 
-  train_freq: 1
-  gradient_steps: 1
-  target_update_interval: 500
+  train_freq: 1           # ogni quanti step trainare | ↑ meno overfitting/instabilità | ↓ apprende più spesso
+  gradient_steps: 1       # quante update per train step | ↑ più learning per dato raccolto | ↓ più stabile
 
-  exploration_fraction: 0.4
-  exploration_final_eps: 0.05
+  target_update_interval: 1000  # update rete target | ↑ più stabilità Q-learning | ↓ più reattivo ma instabile
+
+  exploration_fraction: 0.6     # % training con epsilon decay | ↑ esplora più a lungo | ↓ converge prima
+  exploration_initial_eps: 0.5 # epsilon iniziale | ↑ più random | ↓ meno suicidi iniziali
+  exploration_final_eps: 0.05   # epsilon finale | ↑ più esplorazione finale | ↓ policy più deterministica
 
   policy_kwargs:
-    net_arch: [32, 32]
+    net_arch: [32, 32]   # dimensione rete | ↑ più capacità ma lento/overfit | ↓ più veloce ma meno espressiva
 
-  verbose: 1
-  seed: 0
+  #max_grad_norm: 10      # clipping gradiente | ↑ più stabile su spike | ↓ lascia learning più libero
+
+  verbose: 1             # log livello | 0 silenzioso | 1 base | 2 debug
+  seed: 0                # seed random | cambia per riproducibilità
+
+
 
 
 training:
-  total_timesteps: 30000
-  log_interval: 10
+  total_timesteps: 30000        # durata training | ↑ più performance | ↓ più veloce ma meno convergenza
+  log_interval: 10              # ogni quanti episodi loggare | ↓ più log | ↑ meno output
+  reset_num_timesteps: true     # false per continuare da checkpoint | true per reset contatore timesteps

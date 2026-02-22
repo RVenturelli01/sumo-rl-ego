@@ -1,3 +1,4 @@
+import random
 from gymnasium.spaces import Discrete
 from enum import IntEnum
 from sumo_rl_ego.ego.base import BaseEgoController
@@ -5,17 +6,21 @@ from sumo_rl_ego.ego.base import BaseEgoController
 
 class DiscreteActions(IntEnum):
     SS = 0     # same speed
-    ACC = 1    # +1 m/s^2
-    DEC = 2    # -2 m/s^2
+    ACC = 1    # +1 m/s^2 (default)
+    DEC = 2    # -2 m/s^2 (default)
     LCL = 3    # lane change left
     LCR = 4    # lane change right
 
 
-class MyEgo(BaseEgoController):
+class HighwayDiscreteEgo(BaseEgoController):
 
     def __init__(self, 
+                 acc_value=1.0,
+                 dec_value=-2.0,
                  lc_duration=0):
     
+        self.acc_value = acc_value
+        self.dec_value = dec_value
         self.lc_duration = lc_duration
 
         self.action_space = Discrete(len(DiscreteActions))
@@ -34,9 +39,9 @@ class MyEgo(BaseEgoController):
 
         # LONGITUDINAL CONTROL
         if action == DiscreteActions.ACC:
-            accel = 1.0
+            accel = self.acc_value
         elif action == DiscreteActions.DEC:
-            accel = -2.0
+            accel = self.dec_value
         else:
             accel = None
 
