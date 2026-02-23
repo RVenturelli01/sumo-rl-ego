@@ -6,7 +6,7 @@ from src.utils.config_loader import load_config
 from src.core.env_factory import build_env
 from src.core.model_factory import load_model
 
-from modules.policies.sb3_policy import SB3Policy
+from plugins.policies.sb3_policy import SB3Policy
 from src.utils.class_loader import load_class
 
 
