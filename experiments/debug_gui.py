@@ -7,42 +7,42 @@ from src.infra.loaders.config_loader import load_config
 from src.infra.builders.env_factory import build_env
 from src.infra.builders.model_factory import load_model
 from src.infra.policy.sb3_policy import SB3Policy
-from src.infra.loaders.class_loader import load_class
+from src.infra.loaders.class_loader import build_class
 
 
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
 DEFAULT_CONFIG = "experiments/configs/dqn.yaml"
-DEFAULT_POLICY = "plugins.policies.my_policy.MyPolicy"
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", required=False, default=DEFAULT_CONFIG)
+    parser.add_argument("--config_policy", required=False, default=DEFAULT_CONFIG)
     parser.add_argument("--model", required=False, default=DEFAULT_MODEL)
-    parser.add_argument("--policy", required=False, default=DEFAULT_POLICY)
-    parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
-    cfg = load_config(args.config, args.model)
+    # Load config
+    cfg = load_config(args.config_policy, args.model)
 
+    # Build env (incapsula SumoConfig + builders vari)
     cfg["sumo_config"]["use_gui"] = True
     env = build_env(cfg)
 
+    # Load trained model (SB3Policy wrapper gestito in model_factory)
     if args.model:
         model = load_model(env, cfg, load_path=args.model)
         policy = SB3Policy(model=model)
-    elif args.policy:
-        policy = load_class(args.policy)()
+    elif args.config_policy:
+        policy = build_class(cfg["policy"]["class"], cfg["policy"]["args"])
 
-    obs, _ = env.reset(seed=args.seed)
+    obs, _ = env.reset(seed=cfg["meta"]["seed"])
 
     # GUI tweaks (solo se SUMO GUI attiva)
     traci.gui.setSchema("View #0", "real world")
     traci.gui.trackVehicle("View #0", "ego")
     traci.gui.setZoom("View #0", 1000)
 
-    print("Scenario: ",env.config.sumocfg_file)
-    print("Premi INVIO per fare uno step | Ctrl+C per uscire")
+    print("\nScenario: ",env.config.sumocfg_file)
+    print("Premi INVIO per fare uno step | Ctrl+C per uscire\n")
 
     # ======================
     # Manual rollout loop

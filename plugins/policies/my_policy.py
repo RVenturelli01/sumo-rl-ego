@@ -1,44 +1,76 @@
 import numpy as np
 from src.infra.policy.base import BasePolicy
 
+'''
+Policy based on observation schema:
+- ego speed (normalized)
+- distance front same lane (normalized)
+- ttc front same lane (normalized)
+- ttc front left (normalized)
+- ttc front right (normalized)
+- lane index (normalized)
+- left lane free (binary)
+- right lane free (binary)
+
+Policy based on ego logic:
+    SS = 0     # same speed
+    ACC = 1    # +1 m/s^2 (default)
+    DEC = 2    # -2 m/s^2 (default)
+    LCL = 3    # lane change left
+    LCR = 4    # lane change right
+
+'''
+
 class MyPolicy(BasePolicy):
 
-    def __init__(self):
+    def __init__(self,
+                 max_speed=50.0,
+                 max_ttc=100,
+                 max_distance=100.0,
+                 lane_gap=5.0,
+                 acc_value=1.0,
+                 dec_value=-4.0
+                 ):
         super().__init__()
 
-    def predict(self, obs):
-        ego_speed = obs[0]
-        front_dist = obs[3] * 100
-        front_rel_speed = obs[4] * 30
-        front_left_dist = obs[5] * 100
-        front_left_rel_speed = obs[6] * 30
-        front_right_dist = obs[7] * 100
-        front_right_rel_speed = obs[8] * 30
-        left_free = bool(obs[1])
-        right_free = bool(obs[2])
+        self.max_speed = max_speed
+        self.max_ttc = max_ttc
+        self.max_distance = max_distance
+        self.lane_gap = lane_gap
+        self.acc_value = acc_value
+        self.dec_value = dec_value
 
-        # time to collision (TTC) = distance / relative speed
-        ttc_front = front_dist / (-front_rel_speed) if front_rel_speed < 0 else float('inf')
-        ttc_left = front_left_dist / (-front_left_rel_speed) if front_left_rel_speed < 0 else float('inf')
-        ttc_right = front_right_dist / (-front_right_rel_speed) if front_right_rel_speed < 0 else float('inf')
+    def predict(self, obs):
+        ego_speed = obs[0] * self.max_speed
+        front_dist = obs[1] * self.max_distance
+        ttc_front = obs[2] * self.max_ttc
+        ttc_left = obs[3] * self.max_ttc
+        ttc_right = obs[4] * self.max_ttc
+        lane_index = obs[5]
+        left_free = obs[6] 
+        right_free = obs[7] 
+
+
+        rel_front_speed = ego_speed - (front_dist / ttc_front) if (ttc_front<100 or front_dist<100) else 0
+ 
+        # can i brake before the front vehicle?
+        safe_dist = rel_front_speed**2 / (2 * abs(self.dec_value)) if rel_front_speed > 0 else 0
+
+        # heuristic
+        if front_dist < safe_dist:
+            if ttc_left > ttc_right and left_free:
+                return 3 # LCL
+            elif right_free:
+                return 4 # LCR
+            return 3 # LCL (turn left and pray)
         
-        # Simple heuristic: 
-        if left_free and ttc_left > 2.0:
-            return 3  # lane change left
+        if left_free and ttc_left > 4:
+            return 3 # LCL
         
-        if ttc_front < 2.0 or front_dist < 10.0:
-            # if there's a car dangerously close in front, try to change lane
-            if left_free and ttc_left > 2.0:
-                return 3  # lane change left
-            elif right_free and ttc_right > 2.0:
-                return 4  # lane change right
-            else:
-                return 2  # decelerate
+        if front_dist < safe_dist * 2:
+            return 2 # DEC
         
-        if ttc_front < 4.0 or front_dist < 15.0:
-            return 2  # decelerate
-        
-        if ttc_front > 6.0 and ego_speed < 25.0 :
-            return 1  # accelerate
-        
-        return 0  # same speed
+        if ego_speed > self.max_speed*0.8:
+            return 0 # SS
+
+        return 1 # ACC
