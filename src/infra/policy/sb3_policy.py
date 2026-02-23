@@ -1,4 +1,4 @@
-from plugins.policies.base import BasePolicy
+from src.infra.policy.base import BasePolicy
 
 
 class SB3Policy(BasePolicy):

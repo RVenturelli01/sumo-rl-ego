@@ -3,16 +3,16 @@ import argparse
 import time
 import traci
 
-from src.infra.utils.config_loader import load_config
-from src.infra.env_factory import build_env
-from src.infra.model_factory import load_model
-from plugins.policies.sb3_policy import SB3Policy
-from src.infra.utils.class_loader import load_class
+from src.infra.loaders.config_loader import load_config
+from src.infra.builders.env_factory import build_env
+from src.infra.builders.model_factory import load_model
+from src.infra.policy.sb3_policy import SB3Policy
+from src.infra.loaders.class_loader import load_class
 
 
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
 DEFAULT_CONFIG = "experiments/configs/dqn.yaml"
-DEFAULT_POLICY = "modules.policies.my_policy.MyPolicy"
+DEFAULT_POLICY = "plugins.policies.my_policy.MyPolicy"
 
 
 def main():

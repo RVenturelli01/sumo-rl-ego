@@ -1,5 +1,5 @@
 import numpy as np
-from plugins.policies.base import BasePolicy
+from src.infra.policy.base import BasePolicy
 
 class MyPolicy(BasePolicy):
 

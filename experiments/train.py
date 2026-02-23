@@ -1,10 +1,10 @@
 import argparse
 
-from src.infra.utils.config_loader import load_config
-from src.infra.env_factory import build_env
+from src.infra.loaders.config_loader import load_config
+from src.infra.builders.env_factory import build_env
 from stable_baselines3.common.env_checker import check_env
-from src.infra.model_factory import build_model, load_model
-from src.infra.trainer import train
+from src.infra.builders.model_factory import build_model, load_model
+from infra.trainer.trainer import train
 
 DEFAULT_CONFIG = "experiments/configs/dqn.yaml"
 DEFAULT_MODEL = None # "models/test_dqn_highway_2026-02-21_18-40-11/model.zip"
