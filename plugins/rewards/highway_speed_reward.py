@@ -6,12 +6,12 @@ class HighwaySpeedReward(BaseRewardFunction):
 
     def __init__(
         self,
-        max_speed=30.0,
+        max_speed=50.0,
         w_speed=1.0,
         w_crash=-1.0,
         w_offroad=-1.0,
         w_arrived=1.0,
-        w_lane_change=-0.05,
+        w_lane_change=-0.1,
     ):
         self.max_speed = max_speed
         self.w_speed = w_speed

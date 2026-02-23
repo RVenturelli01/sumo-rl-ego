@@ -14,10 +14,12 @@ class HighwayOneLaneDiscreteEgo(BaseEgoController):
 
     def __init__(self, 
                  acc_value=1.0,
-                 dec_value=-2.0):
+                 dec_value=-2.0,
+                 max_speed=50.0,):
     
         self.acc_value = acc_value
         self.dec_value = dec_value
+        self.max_speed = max_speed
 
         self.action_space = Discrete(len(DiscreteActions))
 
@@ -43,6 +45,7 @@ class HighwayOneLaneDiscreteEgo(BaseEgoController):
 
         if accel is not None:
             new_speed = max(0.0, speed + accel * time_step)
+            new_speed = min(new_speed, self.max_speed)
             self.sim.vehicle.setSpeed(self.ego_id, new_speed)
             return
 

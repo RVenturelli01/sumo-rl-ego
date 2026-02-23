@@ -1,98 +1,61 @@
 import yaml
 from datetime import datetime
+from pathlib import Path
 
 from stable_baselines3.common.monitor import Monitor
 
-from src.utils.project import find_repo_root
-from src.utils.costum_logs_callback import CostumLogsCallback
+from src.infra.utils.project import find_repo_root
+from src.infra.utils.costum_logs_callback import CostumLogsCallback
+
 
 def train(model, env, cfg):
-    """
-    Train SB3 model with clean structure:
+    # --- Repo root ---
+    REPO_ROOT = find_repo_root()
 
-    models/<experiment>/<run>/
-    logs/<experiment>/<run>/
-
-    Saves:
-    - model.zip (models)
-    - config.yaml (models)
-    - tensorboard (logs)
-    - monitor.csv (logs)
-    """
-
-    root = find_repo_root()
-    models_root = root / "models"
-    logs_root = root / "logs" 
-
-    # ===============================
-    # Run naming
-    # ===============================
+    # --- Nome run ---
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     custom_name = cfg.get("meta", {}).get("name")
-
     algo = cfg["algorithm"].lower()
-    run_name = f"{custom_name}_{timestamp}" if custom_name else f"{algo}_{timestamp}"
+    run_name = f"{timestamp}_{custom_name}" if custom_name else f"{timestamp}_{algo}"
 
-    model_dir = models_root / run_name
-    log_dir = logs_root / run_name
+    RUN_DIR = REPO_ROOT / "outputs" / run_name
+    TB_DIR = RUN_DIR / "tensorboard"
 
-    model_dir.mkdir(parents=True, exist_ok=True)
-    log_dir.mkdir(parents=True, exist_ok=True)
+    # crea cartelle
+    RUN_DIR.mkdir(parents=True, exist_ok=True)
+    TB_DIR.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n[RL] Run: {run_name}")
-    print(f"[RL] Models: {model_dir}")
-    print(f"[RL] Logs:   {log_dir}")
+    # --- Monitor SB3 (salva monitor.csv nei logs) ---
+    env = Monitor(env, str(RUN_DIR))
 
-    # ===============================
-    # Monitor (CSV logs)
-    # ===============================
-    # env = Monitor(env, log_dir)
+    # --- TensorBoard ---
+    model.tensorboard_log = str(TB_DIR)
 
-    # ===============================
-    # TensorBoard
-    # ===============================
-    tb_dir = log_dir / "tensorboard"
-    model.tensorboard_log = str(tb_dir)
-
-    # ===============================
-    # Training params
-    # ===============================
+    # --- Parametri training ---
     learn_kwargs = cfg.get("training", {}).copy()
-
     if "total_timesteps" not in learn_kwargs:
         raise ValueError("Config must contain training.total_timesteps")
 
     total_steps = learn_kwargs.pop("total_timesteps")
 
-    print(f"[RL] Algorithm: {cfg['algorithm']}")
-    print(f"[RL] Timesteps: {total_steps}")
-
-    # ===============================
-    # Train
-    # ===============================
+    # --- Training ---
     model.learn(
         total_timesteps=total_steps,
         progress_bar=True,
-        callback=CostumLogsCallback(),
-        tb_log_name="sumo_rl",
+        callback=CostumLogsCallback(),  
+        tb_log_name="train",
         **learn_kwargs,
     )
 
-    # ===============================
-    # Save model (models/)
-    # ===============================
-    model_path = model_dir / "model"
+    # --- Salvataggio modello ---
+    model_path = RUN_DIR / "model"
     model.save(model_path)
 
-    # ===============================
-    # Save config next to model
-    # ===============================
-    config_path = model_dir / "config.yaml"
+    # --- Salvataggio config ---
+    config_path = RUN_DIR / "config.yaml"
     with open(config_path, "w") as f:
         yaml.dump(cfg, f)
 
-    print(f"\n[RL] Model saved: {model_path}.zip")
-    print(f"[RL] Config saved: {config_path}")
-    print(f"[RL] TensorBoard: tensorboard --logdir logs")
-
-    return model_dir, log_dir
+    print(f"\nModel saved: {model_path}.zip")
+    print(f"Config saved: {config_path}")
+    print(f"TensorBoard: tensorboard --logdir outputs")

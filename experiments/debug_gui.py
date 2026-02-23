@@ -3,11 +3,11 @@ import argparse
 import time
 import traci
 
-from src.utils.config_loader import load_config
-from src.core.env_factory import build_env
-from src.core.model_factory import load_model
+from src.infra.utils.config_loader import load_config
+from src.infra.env_factory import build_env
+from src.infra.model_factory import load_model
 from plugins.policies.sb3_policy import SB3Policy
-from src.utils.class_loader import load_class
+from src.infra.utils.class_loader import load_class
 
 
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
@@ -20,11 +20,13 @@ def main():
     parser.add_argument("--config", required=False, default=DEFAULT_CONFIG)
     parser.add_argument("--model", required=False, default=DEFAULT_MODEL)
     parser.add_argument("--policy", required=False, default=DEFAULT_POLICY)
+    parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
 
     cfg = load_config(args.config, args.model)
 
-    env = build_env(cfg, use_gui=True)
+    cfg["sumo_config"]["use_gui"] = True
+    env = build_env(cfg)
 
     if args.model:
         model = load_model(env, cfg, load_path=args.model)

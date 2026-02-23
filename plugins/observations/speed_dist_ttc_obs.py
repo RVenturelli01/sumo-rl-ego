@@ -18,7 +18,7 @@ Observation schema:
 class SpeedDistTTCObs(BaseObservationBuilder):
 
     def __init__(self,
-                 max_speed=30.0,
+                 max_speed=50.0,
                  max_ttc=100,
                  max_distance=100.0,
                  lane_gap=5.0):

@@ -14,15 +14,15 @@ def load_config(config_path: str | None = None,
         print(saved_cfg_path)
 
         if os.path.exists(saved_cfg_path):
-            print("Loading config from model folder")
             with open(saved_cfg_path) as f:
                 cfg = yaml.safe_load(f)
+                print(f"Config loaded from model folder: {saved_cfg_path}")
 
     # --- 2. Fallback to CLI config (train mode) ---
     if cfg is None and config_path:
-        print("Loading config from CLI path")
         with open(config_path) as f:
             cfg = yaml.safe_load(f)
+            print(f"Config loaded from CLI path: {config_path}")
 
     # --- 3. Hard fail if nothing found ---
     if cfg is None:

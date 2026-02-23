@@ -2,24 +2,22 @@
 meta:
   name: test_dqn_highway
   description: A test DQN configuration for the highway environment.
-  tensorboard_log: ./tensorboard_logs/dqn_highway
-
 
 
 
 env:
   ego:
-    class: modules.egos.highway_discrete_ego.HighwayDiscreteEgo
+    class: plugins.egos.highway_discrete_ego.HighwayDiscreteEgo
     args:
       dec_value: -4
   obs:
-    class: modules.observations.speed_dist_ttc_obs.SpeedDistTTCObs
+    class: plugins.observations.speed_dist_ttc_obs.SpeedDistTTCObs
     args:
   reward:
-    class: modules.rewards.highway_speed_reward.HighwaySpeedReward
+    class: plugins.rewards.highway_speed_reward.HighwaySpeedReward
     args:
   metrics:
-    class: modules.metrics.my_metrics.MyMetrics
+    class: plugins.metrics.my_metrics.MyMetrics
     args:
   seed: 0
 

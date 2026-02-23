@@ -2,12 +2,12 @@ import argparse
 from tqdm import tqdm
 import pprint
 
-from src.utils.config_loader import load_config
-from src.core.env_factory import build_env
-from src.core.model_factory import load_model
+from src.infra.utils.config_loader import load_config
+from src.infra.env_factory import build_env
+from src.infra.model_factory import load_model
 
 from plugins.policies.sb3_policy import SB3Policy
-from src.utils.class_loader import load_class
+from src.infra.utils.class_loader import load_class
 
 
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
@@ -56,7 +56,7 @@ def main():
     env.close()
 
     # Global metrics
-    global_metrics = env.metrics_tracker.get_global_metrics()
+    global_metrics = env.metrics_tracker.get_rollout_metrics()
     pprint.pprint(global_metrics)
 
 
