@@ -16,10 +16,8 @@ def main():
     parser.add_argument("--model", default=DEFAULT_MODEL)
     args = parser.parse_args()
 
-    print("\nLoading config file...")
     cfg = load_config(args.config, args.model)
 
-    print("\nBuilding sumo gym environment...")
     env = build_env(cfg)
 
     print("\nCheck environment consistency...")
@@ -27,13 +25,10 @@ def main():
     print("Done")
 
     if args.model:
-        print(f"\nLoading rl model from {args.model}")
         model = load_model(env, cfg, load_path=args.model)
     else:
-        print("\nBuilding a new model...")
         model = build_model(env, cfg)
 
-    print("\nStart training phase...\n")
     train(model, env, cfg)
 
 

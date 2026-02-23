@@ -1,10 +1,10 @@
 <routes>
-    <vType id="egocar" vClass="passenger" carFollowModel="RedVisibility" accel="2" decel="3" apparentDecel="3" emergencyDecel="3" minGap="12" maxSpeed="30.6" speedFactor="1" speedDev="0" sigma="0" tau="1.0" length="4.3" width="1.8" color="1,1,1" imgFile="500x.png" maxVisibility="110" leaderDecel="3"/>
+    <vType id="egocar" vClass="passenger" accel="2" decel="3" apparentDecel="3" emergencyDecel="3" minGap="12" maxSpeed="30.6" speedFactor="1" speedDev="0" sigma="0" tau="1.0" length="4.3" width="1.8" color="1,1,1" imgFile="500x.png" maxVisibility="110" leaderDecel="3"/>
     <vType id="coach" vClass="coach" maxSpeed="27" speedFactor="0.7" speedDev="0.05" sigma="0.5" decel="3" leaderDecel="3"/>
 
     <route id="route0" edges="edge2 edge3 exit" />
 
-    <flow id="coach_base" type="coach" begin="0" end="1000" probability="1.0" from="entry" to="exit" departPos="random" departLane="2" departSpeed="22" color="white"/>
+    <flow id="coach_base" type="coach" begin="0" end="1000" probability="1.0" from="entry" to="exit" departPos="random" departLane="2" departSpeed="desired" color="white"/>
     
-    <vehicle id="ego" type="egocar" depart="200" route="route0" from="edge2" to="exit" departPos="random" departLane="random" departSpeed="22" color="red" />
+    <vehicle id="ego" type="egocar" depart="200" route="route0" from="edge2" to="exit" departPos="random" departLane="random" departSpeed="desired" color="red" />
 </routes>

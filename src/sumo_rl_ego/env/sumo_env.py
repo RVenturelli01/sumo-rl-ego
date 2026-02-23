@@ -5,10 +5,12 @@ from sumo_rl_ego.ego.base import DefaultEgoController
 from sumo_rl_ego.observation.base import DefaultObservationBuilder
 from sumo_rl_ego.reward.base import DefaultRewardFunction
 from sumo_rl_ego.metrics.base import DefaultMetricsTracker
+import random
 
 
 class SumoEnv(gym.Env):
     def __init__(self, 
+                 sumocfg_files: list[str],
                  config = None, 
                  ego_controller=None, 
                  obs_builder=None, 
@@ -19,6 +21,7 @@ class SumoEnv(gym.Env):
 
 
         # --- DEFAULT FALLBACKS ---
+        self.sumocfg_files = sumocfg_files
         self.config = config or SumoConfig()
         self.ego_controller = ego_controller or DefaultEgoController()
         self.obs_builder = obs_builder or DefaultObservationBuilder()
@@ -50,6 +53,7 @@ class SumoEnv(gym.Env):
 
         # ensure different seed at each reset for more varied episodes
         self.config.seed += 1  
+        self.config.sumocfg_file = random.choice(self.sumocfg_files)
         
         self.sim.reset()
         self.ego_controller.reset()

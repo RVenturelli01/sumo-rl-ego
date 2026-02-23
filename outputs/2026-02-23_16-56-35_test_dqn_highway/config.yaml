@@ -14,9 +14,16 @@ env:
     args: null
     class: plugins.rewards.highway_speed_reward.HighwaySpeedReward
   seed: 0
+  sumocfg_files:
+  - scenarios/highway_fast/highway.sumocfg
+  - scenarios/highway_fast_modified/highway.sumocfg
+  - scenarios/highway_lane3_occupied/highway.sumocfg
+  - scenarios/highway_overtake_lane0_3lanes/highway.sumocfg
+  - scenarios/highway_slow_3lanes/highway.sumocfg
 meta:
   description: A test DQN configuration for the highway environment.
   name: test_dqn_highway
+  seed: 0
 model:
   batch_size: 128
   buffer_size: 30000
@@ -31,7 +38,6 @@ model:
     net_arch:
     - 32
     - 32
-  seed: 0
   target_update_interval: 1000
   train_freq: 1
   verbose: 1
@@ -39,8 +45,6 @@ policy: MlpPolicy
 sumo_config:
   ego_id: ego
   max_steps: 800
-  seed: 0
-  sumocfg_file: scenarios/highway_fast/highway.sumocfg
   time_step: 0.5
 training:
   log_interval: 10

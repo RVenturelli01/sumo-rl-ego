@@ -5,13 +5,14 @@ import yaml
 def load_config(config_path: str | None = None,
                 model_path: str | None = None) -> dict:
 
+    print("\n[INFRA] Loading config file...")
+
     cfg = None
 
     # --- 1. Try loading from model folder (eval mode or fine-train mode) ---
     if model_path:
         model_dir = os.path.dirname(model_path)
         saved_cfg_path = os.path.join(model_dir, "config.yaml")
-        print(saved_cfg_path)
 
         if os.path.exists(saved_cfg_path):
             with open(saved_cfg_path) as f:

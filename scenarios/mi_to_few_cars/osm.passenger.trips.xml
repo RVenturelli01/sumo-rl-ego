@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <routes>
 
-  <vType id="egocar" vClass="passenger" carFollowModel="RedVisibility" accel="2" decel="3" apparentDecel="3" emergencyDecel="3" minGap="12" maxSpeed="30.6" speedFactor="1" speedDev="0" sigma="0" tau="1.0" length="4.3" width="1.8" color="1,1,1" imgFile="500x.png" maxVisibility="110" leaderDecel="3"/>
+  <vType id="egocar" vClass="passenger" accel="2" decel="3" apparentDecel="3" emergencyDecel="3" minGap="12" maxSpeed="30.6" speedFactor="1" speedDev="0" sigma="0" tau="1.0" length="4.3" width="1.8" color="1,1,1" imgFile="500x.png" maxVisibility="110" leaderDecel="3"/>
   <vType id="normalcar" vClass="passenger" maxSpeed="25" speedFactor="1" speedDev="0.1" sigma="0.5"  decel="3" leaderDecel="3"/>
   <vType id="coach" vClass="coach" maxSpeed="24" speedFactor="1" speedDev="0.1" sigma="0.5"  decel="3" leaderDecel="3"/>
   <vType id="trailer" vClass="trailer" maxSpeed="24" speedFactor="1" speedDev="0.1" sigma="0.5"  decel="3" leaderDecel="3"/>

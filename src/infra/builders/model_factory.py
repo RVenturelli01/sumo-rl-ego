@@ -6,9 +6,11 @@ ALGOS = {
 }
 
 def build_model(env, cfg: dict):
+    print("\n[INFRA] Building a new model...")
+
     algo = ALGOS[cfg["algorithm"]]
 
-    env.reset(seed=cfg["env"]["seed"])
+    env.reset(seed=cfg["meta"]["seed"])
 
     model = algo(
         policy=cfg["policy"],
@@ -19,9 +21,11 @@ def build_model(env, cfg: dict):
 
 
 def load_model(env, cfg: dict, load_path: str):
+    print(f"\n[INFRA] Loading rl model from {load_path}")
+
     algo = ALGOS[cfg["algorithm"]]
 
-    env.reset(seed=cfg["env"]["seed"])
+    env.reset(seed=cfg["meta"]["seed"])
 
     model = algo.load(load_path, env=env)  
     return model

@@ -9,6 +9,8 @@ from src.infra.utils.costum_logs_callback import CostumLogsCallback
 
 
 def train(model, env, cfg):
+    print("\n[INFRA] Start training phase...\n")
+    
     # --- Repo root ---
     REPO_ROOT = find_repo_root()
 

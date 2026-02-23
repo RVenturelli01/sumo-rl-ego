@@ -6,7 +6,7 @@ class SumoConfig:
         self,
 
         # cmd args for SUMO configuration
-        sumocfg_file: str,
+        sumocfg_file: str = None,
         use_gui: bool = False,
         auto_start: bool = True,
         no_step_log: bool = True,

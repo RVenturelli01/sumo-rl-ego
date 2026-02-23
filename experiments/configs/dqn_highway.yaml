@@ -2,10 +2,17 @@
 meta:
   name: test_dqn_highway
   description: A test DQN configuration for the highway environment.
+  seed: 0
 
 
 
 env:
+  sumocfg_files: 
+    - scenarios/highway_fast/highway.sumocfg
+    - scenarios/highway_fast_modified/highway.sumocfg
+    - scenarios/highway_lane3_occupied/highway.sumocfg
+    - scenarios/highway_overtake_lane0_3lanes/highway.sumocfg
+    - scenarios/highway_slow_3lanes/highway.sumocfg
   ego:
     class: plugins.egos.highway_discrete_ego.HighwayDiscreteEgo
     args:
@@ -19,18 +26,11 @@ env:
   metrics:
     class: plugins.metrics.my_metrics.MyMetrics
     args:
-  seed: 0
-
-
-
-
 
 sumo_config:
-  sumocfg_file: networks/highway_fast/highway.sumocfg
   ego_id: ego
   time_step: 0.5
   max_steps: 800
-  seed: 0
 
 
 
@@ -64,7 +64,6 @@ model:
   #max_grad_norm: 10      # clipping gradiente | ↑ più stabile su spike | ↓ lascia learning più libero
 
   verbose: 1             # log livello | 0 silenzioso | 1 base | 2 debug
-  seed: 0                # seed random | cambia per riproducibilità
 
 
 

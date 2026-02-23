@@ -36,29 +36,29 @@
     <location netOffset="0.00,0.00" convBoundary="0.00,0.00,0.00,2000.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
 
     <edge id="edge1" from="gneJ1" to="gneJ2" priority="1" length="196.00">
-        <lane id="edge1_0" index="0" speed="30.60" length="196.00" shape="8.00,2.00 8.00,198.00"/>
-        <lane id="edge1_1" index="1" speed="30.60" length="196.00" shape="4.80,2.00 4.80,198.00"/>
-        <lane id="edge1_2" index="2" speed="30.60" length="196.00" shape="1.60,2.00 1.60,198.00"/>
+        <lane id="edge1_0" index="0" speed="300.60" length="196.00" shape="8.00,2.00 8.00,198.00"/>
+        <lane id="edge1_1" index="1" speed="300.60" length="196.00" shape="4.80,2.00 4.80,198.00"/>
+        <lane id="edge1_2" index="2" speed="300.60" length="196.00" shape="1.60,2.00 1.60,198.00"/>
     </edge>
     <edge id="edge2" from="gneJ2" to="gneJ3" priority="1">
-        <lane id="edge2_0" index="0" speed="30.60" length="2.00" shape="8.00,198.00 8.00,200.00"/>
-        <lane id="edge2_1" index="1" speed="30.60" length="2.00" shape="4.80,198.00 4.80,200.00"/>
-        <lane id="edge2_2" index="2" speed="30.60" length="2.00" shape="1.60,198.00 1.60,200.00"/>
+        <lane id="edge2_0" index="0" speed="300.60" length="2.00" shape="8.00,198.00 8.00,200.00"/>
+        <lane id="edge2_1" index="1" speed="300.60" length="2.00" shape="4.80,198.00 4.80,200.00"/>
+        <lane id="edge2_2" index="2" speed="300.60" length="2.00" shape="1.60,198.00 1.60,200.00"/>
     </edge>
     <edge id="edge3" from="gneJ3" to="gneJ0" priority="1" length="1800.00">
-        <lane id="edge3_0" index="0" speed="30.60" length="1800.00" shape="8.00,200.00 8.00,1998.00"/>
-        <lane id="edge3_1" index="1" speed="30.60" length="1800.00" shape="4.80,200.00 4.80,1998.00"/>
-        <lane id="edge3_2" index="2" speed="30.60" length="1800.00" shape="1.60,200.00 1.60,1998.00"/>
+        <lane id="edge3_0" index="0" speed="300.60" length="1800.00" shape="8.00,200.00 8.00,1998.00"/>
+        <lane id="edge3_1" index="1" speed="300.60" length="1800.00" shape="4.80,200.00 4.80,1998.00"/>
+        <lane id="edge3_2" index="2" speed="300.60" length="1800.00" shape="1.60,200.00 1.60,1998.00"/>
     </edge>
     <edge id="entry" from="entry" to="gneJ1" priority="1" length="2.00">
         <lane id="entry_0" index="0" speed="30.60" length="2.00" shape="8.00,0.00 8.00,2.00"/>
-        <lane id="entry_1" index="1" speed="30.60" length="2.00" shape="4.80,0.00 4.80,2.00"/>
-        <lane id="entry_2" index="2" speed="30.60" length="2.00" shape="1.60,0.00 1.60,2.00"/>
+        <lane id="entry_1" index="1" speed="300.60" length="2.00" shape="4.80,0.00 4.80,2.00"/>
+        <lane id="entry_2" index="2" speed="300.60" length="2.00" shape="1.60,0.00 1.60,2.00"/>
     </edge>
     <edge id="exit" from="gneJ0" to="exit" priority="1" length="2.00">
-        <lane id="exit_0" index="0" speed="30.60" length="2.00" shape="8.00,1998.00 8.00,2000.00"/>
-        <lane id="exit_1" index="1" speed="30.60" length="2.00" shape="4.80,1998.00 4.80,2000.00"/>
-        <lane id="exit_2" index="2" speed="30.60" length="2.00" shape="1.60,1998.00 1.60,2000.00"/>
+        <lane id="exit_0" index="0" speed="300.60" length="2.00" shape="8.00,1998.00 8.00,2000.00"/>
+        <lane id="exit_1" index="1" speed="300.60" length="2.00" shape="4.80,1998.00 4.80,2000.00"/>
+        <lane id="exit_2" index="2" speed="300.60" length="2.00" shape="1.60,1998.00 1.60,2000.00"/>
     </edge>
 
     <junction id="entry" type="dead_end" x="0.00" y="0.00" incLanes="" intLanes="" shape="0.00,0.00 9.60,0.00"/>

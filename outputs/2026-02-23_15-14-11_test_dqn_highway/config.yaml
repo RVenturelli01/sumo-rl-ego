@@ -40,7 +40,7 @@ sumo_config:
   ego_id: ego
   max_steps: 800
   seed: 0
-  sumocfg_file: networks/highway_fast/highway.sumocfg
+  sumocfg_file: scenarios/highway_fast/highway.sumocfg
   time_step: 0.5
 training:
   log_interval: 10
