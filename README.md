@@ -108,38 +108,38 @@ All policies implement a common interface, enabling:
 
 ```text
 src/
-  sumo_rl_ego/
-    env/                # Core Gymnasium SUMO wrapper
-    ego/                # Ego-vehicle interfaces and implementations
-    observation/        # Observation spaces and feature builders
-    reward/             # Reward functions and shaping logic
-    metrics/            # Metrics tracking and evaluation utilities
-
-  infra/               
-    builders/           # Environment and policy builders
-    trainer/            # Training loops and orchestration
-    loaders/            # Config and class loading utilities
-    utils/              # Shared helpers and abstractions
-    policy/             # Unified interface for RL and handcrafted policies
-
+├─ sumo_rl_ego/
+│  ├─ env/            # Core Gymnasium SUMO wrapper
+│  ├─ ego/            # Ego-vehicle interfaces and implementations
+│  ├─ observation/    # Observation spaces and feature builders
+│  ├─ reward/         # Reward functions and shaping logic
+│  └─ metrics/        # Metrics tracking and evaluation utilities
+│
+├─ infra/
+│  ├─ builders/       # Environment and policy builders
+│  ├─ trainer/        # Training loops and orchestration
+│  ├─ loaders/        # Config and class loading utilities
+│  ├─ utils/          # Shared helpers and abstractions
+│  └─ policy/         # Unified interface for RL and handcrafted policies
+│
 experiments/
-  configs/              # YAML experiment definitions
-  train.py              # Training entry point
-  eval.py               # Evaluation entry point
-  debug_gui.py          # GUI rollout and inspection
-
+├─ configs/           # YAML experiment definitions
+├─ train.py           # Training entry point
+├─ eval.py            # Evaluation entry point
+└─ debug_gui.py       # GUI rollout and inspection
+│
 scenarios/
-  ...                   # Pre-built SUMO benchmark scenarios
-
+└─ ...                # Pre-built SUMO benchmark scenarios
+│
 plugins/
-  observation/          # Custom observation plugins
-  reward/               # Custom reward plugins
-  ego/                  # Custom ego logic implementations
-  policy/               # Costum hand crafted policies
-  metrics/              # Custom evaluation metrics
-
+├─ observation/       # Custom observation plugins
+├─ reward/            # Custom reward plugins
+├─ ego/               # Custom ego logic implementations
+├─ policy/            # Custom handcrafted policies
+└─ metrics/           # Custom evaluation metrics
+│
 tests/
-  ...                   # Unit and integration tests          
+└─ ...                # Unit and integration tests       
 
 
 ```
