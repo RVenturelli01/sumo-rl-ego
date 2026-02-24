@@ -3,7 +3,7 @@ import argparse
 import time
 import traci
 
-from src.infra.loaders.config_loader import load_config
+from src.infra.loaders.config_loader import load_config, load_config_from_model
 from src.infra.builders.env_factory import build_env
 from src.infra.builders.model_factory import load_model
 from src.infra.policy.sb3_policy import SB3Policy
@@ -16,12 +16,17 @@ DEFAULT_CONFIG = "experiments/configs/dqn.yaml"
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_policy", required=False, default=DEFAULT_CONFIG)
-    parser.add_argument("--model", required=False, default=DEFAULT_MODEL)
+    parser.add_argument("--config_policy", default=DEFAULT_CONFIG)
+    parser.add_argument("--model", default=DEFAULT_MODEL)
     args = parser.parse_args()
 
-    # Load config
-    cfg = load_config(args.config_policy, args.model)
+    if not args.config_policy and not args.model:
+        parser.error("You must provide either --config_policy or --model")
+
+    if args.model:
+        cfg = load_config_from_model(args.model)
+    else:
+        cfg = load_config(args.config_policy)
 
     # Build env (incapsula SumoConfig + builders vari)
     cfg["sumo_config"]["use_gui"] = True

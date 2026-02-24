@@ -16,11 +16,7 @@ tensorboard_dqn/DQN*
 .vscode/settings.json
 
 # RL artifacts
-logs/
-models/
-checkpoints/
-tensorboard/
-runs/
+outputs/
 *.zip
 *.pth
 *.pt

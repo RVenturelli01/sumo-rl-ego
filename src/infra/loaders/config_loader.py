@@ -2,34 +2,43 @@ import os
 import yaml
 
 
-def load_config(config_path: str | None = None,
-                model_path: str | None = None) -> dict:
+def load_config(config_path: str) -> dict:
+    """
+    Load config directly from a YAML file.
+    Used for training from scratch or fine-tuning.
+    """
+    print("\n[INFRA] Loading config from YAML...")
 
-    print("\n[INFRA] Loading config file...")
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"[INFRA] Config not found: {config_path}")
 
-    cfg = None
+    with open(config_path) as f:
+        cfg = yaml.safe_load(f)
 
-    # --- 1. Try loading from model folder (eval mode or fine-train mode) ---
-    if model_path:
-        model_dir = os.path.dirname(model_path)
-        saved_cfg_path = os.path.join(model_dir, "config.yaml")
+    print(f"[INFRA] Config loaded from: {config_path}")
+    return cfg
 
-        if os.path.exists(saved_cfg_path):
-            with open(saved_cfg_path) as f:
-                cfg = yaml.safe_load(f)
-                print(f"Config loaded from model folder: {saved_cfg_path}")
 
-    # --- 2. Fallback to CLI config (train mode) ---
-    if cfg is None and config_path:
-        with open(config_path) as f:
-            cfg = yaml.safe_load(f)
-            print(f"Config loaded from CLI path: {config_path}")
+def load_config_from_model(model_path: str) -> dict:
+    """
+    Load config stored alongside a trained model.
+    Used for resume or evaluation.
+    """
+    print("\n[INFRA] Loading config from model folder...")
 
-    # --- 3. Hard fail if nothing found ---
-    if cfg is None:
-        raise ValueError(
-            "No config found. Provide --config for training "
-            "or ensure config.yaml exists in model folder."
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"[INFRA] Model not found: {model_path}")
+
+    model_dir = os.path.dirname(model_path)
+    saved_cfg_path = os.path.join(model_dir, "config.yaml")
+
+    if not os.path.exists(saved_cfg_path):
+        raise FileNotFoundError(
+            f"[INFRA] No config.yaml found next to model: {saved_cfg_path}"
         )
 
+    with open(saved_cfg_path) as f:
+        cfg = yaml.safe_load(f)
+
+    print(f"[INFRA] Config loaded from model folder: {saved_cfg_path}")
     return cfg
