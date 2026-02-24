@@ -77,19 +77,19 @@ class MyMetrics(BaseMetricsTracker):
         if ego_status.get("removed_unknown", False):
             self.removed_unknown += 1
 
-        if action in (3, 4):
-            self.ep_lane_changes += 1
+        # if action in (3, 4):
+        #     self.ep_lane_changes += 1
 
-        if action == 0:
-            self.ep_actions_SS += 1
-        elif action == 1:
-            self.ep_actions_ACC += 1
-        elif action == 2:
-            self.ep_actions_DEC += 1
-        elif action == 3:
-            self.ep_actions_LCL += 1
-        elif action == 4:
-            self.ep_actions_LCR += 1
+        # if action == 0:
+        #     self.ep_actions_SS += 1
+        # elif action == 1:
+        #     self.ep_actions_ACC += 1
+        # elif action == 2:
+        #     self.ep_actions_DEC += 1
+        # elif action == 3:
+        #     self.ep_actions_LCL += 1
+        # elif action == 4:
+        #     self.ep_actions_LCR += 1
 
         # velocità
         if self.sim.ego_exists(self.ego_id):

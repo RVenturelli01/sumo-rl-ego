@@ -31,8 +31,8 @@ class HighwaySpeedReward(BaseRewardFunction):
         reward += self.w_speed * np.clip(speed / self.max_speed, 0.0, 1.0)
 
         # small lane change penalty (anti zig-zag)
-        if action in (3, 4):
-            reward += self.w_lane_change
+        # if action in (3, 4):
+        #     reward += self.w_lane_change
 
         return reward
 
