@@ -12,12 +12,14 @@ from src.infra.loaders.class_loader import build_class
 
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
 DEFAULT_CONFIG = "experiments/configs/dqn.yaml"
+DEFAULT_SEED = 0
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_policy", default=DEFAULT_CONFIG)
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument("--seed", help="Random seed", default=DEFAULT_SEED, type=int)
     args = parser.parse_args()
 
     if not args.config_policy and not args.model:
@@ -30,16 +32,16 @@ def main():
 
     # Build env (incapsula SumoConfig + builders vari)
     cfg["sumo_config"]["use_gui"] = True
-    env = build_env(cfg)
+    env = build_env(cfg, seed=args.seed)
 
     # Load trained model (SB3Policy wrapper gestito in model_factory)
     if args.model:
-        model = load_model(env, cfg, load_path=args.model)
+        model = load_model(env, cfg, load_path=args.model, seed=args.seed)
         policy = SB3Policy(model=model)
     elif args.config_policy:
         policy = build_class(cfg["policy"]["class"], cfg["policy"]["args"])
 
-    obs, _ = env.reset(seed=cfg["meta"]["seed"])
+    obs, _ = env.reset(seed=args.seed)
 
     # GUI tweaks (solo se SUMO GUI attiva)
     traci.gui.setSchema("View #0", "real world")

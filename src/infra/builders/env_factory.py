@@ -4,10 +4,10 @@ from src.infra.loaders.class_loader import build_class
 
 
 
-def build_env(cfg) -> SumoEnv:
+def build_env(cfg: dict, seed: int) -> SumoEnv:
     print("\n[INFRA] Building sumo gym environment...")
 
-    sumo_cfg = SumoConfig(**cfg["sumo_config"], seed=cfg["meta"]["seed"]) 
+    sumo_cfg = SumoConfig(**cfg["sumo_config"], seed=seed) 
 
     ego_class = build_class(cfg["env"]["ego"]["class"], args=cfg["env"]["ego"]["args"])
     obs_class = build_class(cfg["env"]["obs"]["class"], args=cfg["env"]["obs"]["args"])

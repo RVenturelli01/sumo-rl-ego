@@ -5,12 +5,12 @@ ALGOS = {
     "PPO": PPO,
 }
 
-def build_model(env, cfg: dict):
+def build_model(env, cfg: dict, seed: int):
     print("\n[INFRA] Building a new model...")
 
     algo = ALGOS[cfg["algorithm"]]
 
-    env.reset(seed=cfg["meta"]["seed"])
+    env.reset(seed=seed)
 
     model = algo(
         policy=cfg["policy"],
@@ -20,12 +20,12 @@ def build_model(env, cfg: dict):
     return model
 
 
-def load_model(env, cfg: dict, load_path: str):
+def load_model(env, cfg: dict, load_path: str, seed: int):
     print(f"\n[INFRA] Loading rl model from {load_path}")
 
     algo = ALGOS[cfg["algorithm"]]
 
-    env.reset(seed=cfg["meta"]["seed"])
+    env.reset(seed=seed)
 
     model = algo.load(load_path, env=env)  
     return model

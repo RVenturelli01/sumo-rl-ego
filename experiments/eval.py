@@ -13,6 +13,7 @@ from src.infra.loaders.class_loader import build_class
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
 DEFAULT_CONFIG = "experiments/configs/dqn.yaml"
 DEFAULT_EPISODES = 20
+DEFAULT_SEED = 0
 
 
 
@@ -21,6 +22,7 @@ def main():
     parser.add_argument("--config_policy", default=DEFAULT_CONFIG)
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--episodes", type=int, default=DEFAULT_EPISODES)
+    parser.add_argument("--seed", help="Random seed", default=DEFAULT_SEED, type=int)
     args = parser.parse_args()
 
     if not args.config_policy and not args.model:
@@ -32,11 +34,11 @@ def main():
         cfg = load_config(args.config_policy)
 
     # Build env (incapsula SumoConfig + builders vari)
-    env = build_env(cfg)
+    env = build_env(cfg, seed=args.seed)
 
     # Load trained model (SB3Policy wrapper gestito in model_factory)
     if args.model:
-        model = load_model(env, cfg, load_path=args.model)
+        model = load_model(env, cfg, load_path=args.model, seed=args.seed)
         policy = SB3Policy(model=model)
     elif args.config_policy:
         policy = build_class(cfg["policy"]["class"], cfg["policy"]["args"])
@@ -47,7 +49,7 @@ def main():
     for _ in range(args.episodes):
         pbar.update(1)
 
-        obs, _ = env.reset()
+        obs, _ = env.reset(seed=args.seed + _)
         terminated = False
         truncated = False
 
