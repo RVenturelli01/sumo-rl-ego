@@ -59,6 +59,14 @@ class SpeedDistTTCObs(BaseObservationBuilder):
             dtype=np.float32
         )
 
+
+    def set_context(self, ctx):
+        super().set_context(ctx)
+        self.ctx.inject("obs_max_speed", self.max_speed)
+        self.ctx.inject("obs_max_ttc", self.max_ttc)
+        self.ctx.inject("obs_max_distance", self.max_distance)
+
+
     def build_obs(self):
 
         ego_speed = self.sim.vehicle.getSpeed(self.ego_id)

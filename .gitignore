@@ -20,3 +20,4 @@ outputs/
 *.zip
 *.pth
 *.pt
+.env

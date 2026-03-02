@@ -4,8 +4,8 @@ from pathlib import Path
 
 from stable_baselines3.common.monitor import Monitor
 
-from src.infra.utils.project import find_repo_root
-from src.infra.utils.costum_logs_callback import CostumLogsCallback
+from infra.utils.project import find_repo_root
+from infra.utils.custom_logs_callback import CustomLogsCallback
 
 
 def train(model, env, cfg):
@@ -44,7 +44,7 @@ def train(model, env, cfg):
     model.learn(
         total_timesteps=total_steps,
         progress_bar=True,
-        callback=CostumLogsCallback(),  
+        callback=CustomLogsCallback(),
         tb_log_name="train",
         **learn_kwargs,
     )

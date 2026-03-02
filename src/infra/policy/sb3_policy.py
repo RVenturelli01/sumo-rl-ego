@@ -1,4 +1,4 @@
-from src.infra.policy.base import BasePolicy
+from infra.policy.base import BasePolicy
 
 
 class SB3Policy(BasePolicy):

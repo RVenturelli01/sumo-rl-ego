@@ -1,64 +1,17 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from sumo_rl_ego.core.plugin import BaseEnvPlugin
 
-class BaseMetricsTracker(ABC):
 
-    @abstractmethod
-    def update_step(self, obs, action, reward, info):
-        pass
+class BaseMetricsTracker(BaseEnvPlugin):
 
     @abstractmethod
-    def get_step_metrics(self):
+    def compute_step_metrics(self, obs, action, reward, info):
         pass
 
     @abstractmethod
-    def end_episode(self, info):
+    def finalize_episode_metrics(self):
         pass
 
     @abstractmethod
-    def get_episode_metrics(self):
+    def get_log_metrics(self):
         pass
-
-    @abstractmethod
-    def get_rollout_metrics(self, window_size):
-        pass
-        
-    def reset(self):
-        pass
-        
-    def set_sumo_simulation(self, sim):
-        self.sim = sim
-
-    def set_ego_id(self, ego_id):
-        self.ego_id = ego_id
-
-
-
-class DefaultMetricsTracker(BaseMetricsTracker):
-
-    def update_step(self, obs, action, reward, info):
-        pass
-
-    def get_step_metrics(self):
-        return {}
-    
-    def end_episode(self, info):
-        pass
-
-    def get_episode_metrics(self):
-        return {}
-    
-    def get_global_metrics(self):
-        return {}
-
-    def get_metrics_step(self):
-        return {}
-
-    def end_episode(self, info):
-        pass
-
-    def get_metrics_episode(self):
-        return {}
-    
-    def get_global_metrics(self):
-        return {}
-    

@@ -1,6 +1,6 @@
-from sumo_rl_ego.env.sumo_env import SumoEnv
-from sumo_rl_ego.env.config import SumoConfig
-from src.infra.loaders.class_loader import build_class
+from sumo_rl_ego.env import SumoEnv
+from sumo_rl_ego.core.config import SumoConfig
+from infra.loaders.class_loader import build_class
 
 
 
@@ -22,7 +22,7 @@ def build_env(cfg: dict, seed: int) -> SumoEnv:
                 reward_function=reward_class,
                 metrics_tracker=metrics_class)  
     
-    print("Env loaded with the following plugins:")
+    print("Env loaded with the following components:")
     print(cfg["env"]["ego"]["class"])
     print(cfg["env"]["obs"]["class"])
     print(cfg["env"]["reward"]["class"])

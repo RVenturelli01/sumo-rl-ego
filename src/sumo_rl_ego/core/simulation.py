@@ -7,17 +7,12 @@ class DomainProxy:
         self._overrides = overrides or {}
 
     def __getattr__(self, name):
-        # override locale
         if name in self._overrides:
             return self._overrides[name]
-
-        # fallback a traci
         attr = getattr(self._traci, name)
-
         if callable(attr):
             return attr
         return attr
-
 
 
 class SumoSimulation:
@@ -63,17 +58,15 @@ class SumoSimulation:
 
     def simulationStep(self):
         traci.simulationStep()
-        
+
     # =========================================================
     # OVERRIDES
     # =========================================================
 
-    # ---- safe speed ----
     def _set_speed_safe(self, veh_id, speed):
         if veh_id in traci.vehicle.getIDList():
             traci.vehicle.setSpeed(veh_id, speed)
 
-    # ---- safe lane change ----
     def _change_lane_safe(self, veh_id, lane_index_new, duration):
         if veh_id not in traci.vehicle.getIDList():
             return
@@ -92,7 +85,7 @@ class SumoSimulation:
             self.off_road = True
 
     # =========================================================
-    # Helpers tuoi
+    # Helpers
     # =========================================================
     def wait_for_vehicle(self, ego_id, max_steps=10000):
         steps = 0
@@ -101,7 +94,6 @@ class SumoSimulation:
             steps += 1
             if steps > max_steps:
                 raise RuntimeError("Ego vehicle was not spawned.")
-
 
     def get_ego_status(self, ego_id):
         exists = self.ego_exists(ego_id)
@@ -116,20 +108,20 @@ class SumoSimulation:
         arrived = ego_id in traci.simulation.getArrivedIDList()
 
         collided = (
-            ego_id in traci.simulation.getCollidingVehiclesIDList() 
+            ego_id in traci.simulation.getCollidingVehiclesIDList()
             and not arrived)
-        
+
         off_road = (
-            (self.off_road or lane_id in ("", None)) 
-            and not arrived 
-            and not collided )
+            (self.off_road or lane_id in ("", None))
+            and not arrived
+            and not collided)
 
         teleported = (
-            ego_id in traci.simulation.getStartingTeleportIDList() 
-            and not arrived 
+            ego_id in traci.simulation.getStartingTeleportIDList()
+            and not arrived
             and not collided
             and not off_road)
-        
+
         ego_removed_unknown = (
             not exists
             and not arrived
@@ -145,12 +137,11 @@ class SumoSimulation:
             "arrived": arrived,
             "off_road": off_road,
             "removed_unknown": ego_removed_unknown,
-            }
+        }
 
     def enable_rl_control(self, ego_id):
         traci.vehicle.setSpeedMode(ego_id, 0)
         traci.vehicle.setLaneChangeMode(ego_id, 0)
-        
 
     def ego_exists(self, ego_id):
         return ego_id in traci.vehicle.getIDList()

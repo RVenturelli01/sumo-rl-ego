@@ -16,7 +16,7 @@ class HighwayDiscreteEgo(BaseEgoController):
 
     def __init__(self, 
                  acc_value=1.0,
-                 dec_value=-2.0,
+                 dec_value=-4.0,
                  lc_duration=0):
     
         self.acc_value = acc_value

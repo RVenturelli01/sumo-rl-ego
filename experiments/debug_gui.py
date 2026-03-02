@@ -3,11 +3,11 @@ import argparse
 import time
 import traci
 
-from src.infra.loaders.config_loader import load_config, load_config_from_model
-from src.infra.builders.env_factory import build_env
-from src.infra.builders.model_factory import load_model
-from src.infra.policy.sb3_policy import SB3Policy
-from src.infra.loaders.class_loader import build_class
+from infra.loaders.config_loader import load_config, load_config_from_model
+from infra.builders.env_factory import build_env
+from infra.builders.model_factory import load_model
+from infra.policy.sb3_policy import SB3Policy
+from infra.loaders.class_loader import build_class
 
 
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
