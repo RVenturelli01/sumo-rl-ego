@@ -6,7 +6,7 @@ from sumo_rl_ego.env.sumo_env import SumoEnv
 
 
 config = SumoConfig(
-    sumocfg_file="networks/highway_fast/highway.sumocfg",
+    sumocfg_file="scenarios/highway_fast/highway.sumocfg",
     use_gui=True,
     #auto_start=False,
     ego_id="ego",

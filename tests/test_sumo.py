@@ -2,7 +2,7 @@ import traci
 
 SUMO_CMD = [
     "sumo",
-    "-c", "networks/+_cross/cross.sumocfg"
+    "-c", "scenarios/+_cross/cross.sumocfg"
 ]
 
 traci.start(SUMO_CMD)
