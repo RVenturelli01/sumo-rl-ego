@@ -11,7 +11,6 @@ from sumo_rl_ego.infra.builders.model_factory import load_model
 from sumo_rl_ego.infra.policy.sb3_policy import SB3Policy
 from sumo_rl_ego.infra.loaders.class_loader import build_class
 
-
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
 DEFAULT_CONFIG = None #"experiments/configs/dqn.yaml"
 DEFAULT_EPISODES = 20
