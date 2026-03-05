@@ -183,7 +183,7 @@ class SpeedDistTTCObs(BaseObservationBuilder):
              ], dtype=np.float32)
 
 
-    def print_obs(self, obs):
+    def com(self, obs):
         ego_speed = obs[0] * self.max_speed
         distance_front = obs[1] * self.max_distance
         distance_front_left = obs[2] * self.max_distance

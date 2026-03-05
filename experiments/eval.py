@@ -1,3 +1,6 @@
+import sys
+import os
+
 import argparse
 from tqdm import tqdm
 import pprint
@@ -10,7 +13,7 @@ from infra.loaders.class_loader import build_class
 
 
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
-DEFAULT_CONFIG = "experiments/configs/dqn.yaml"
+DEFAULT_CONFIG = None #"experiments/configs/dqn.yaml"
 DEFAULT_EPISODES = 20
 DEFAULT_SEED = 0
 
@@ -60,7 +63,7 @@ def main():
     env.close()
 
     # Global metrics
-    global_metrics = env.metrics_tracker.get_rollout_metrics()
+    global_metrics = env.metrics_tracker.get_log_metrics()
     pprint.pprint(global_metrics)
 
 
