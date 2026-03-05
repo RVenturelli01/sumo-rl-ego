@@ -13,17 +13,17 @@ env:
     - scenarios/highway_overtake_lane0_3lanes/highway.sumocfg
     - scenarios/highway_slow_3lanes/highway.sumocfg
   ego:
-    class: plugins.egos.highway_discrete_ego.HighwayDiscreteEgo
+    class: sumo_rl_ego.plugins.egos.highway_discrete_ego.HighwayDiscreteEgo
     args:
       dec_value: -4
   obs:
-    class: plugins.observations.speed_dist_ttc_obs.SpeedDistTTCObs
+    class: sumo_rl_ego.plugins.observations.speed_dist_ttc_obs.SpeedDistTTCObs
     args:
   reward:
-    class: plugins.rewards.highway_speed_reward.HighwaySpeedReward
+    class: sumo_rl_ego.plugins.rewards.highway_speed_reward.HighwaySpeedReward
     args:
   metrics:
-    class: plugins.metrics.my_metrics.MyMetrics
+    class: sumo_rl_ego.plugins.metrics.my_metrics.MyMetrics
     args:
 
 sumo_config:
@@ -32,5 +32,5 @@ sumo_config:
   max_steps: 800
 
 policy:
-  class: plugins.policies.my_policy.MyPolicy
+  class: sumo_rl_ego.plugins.policies.my_policy.MyPolicy
   args:

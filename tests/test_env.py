@@ -1,6 +1,6 @@
 import numpy as np
-from sumo_rl_ego.core.config import SumoConfig
-from sumo_rl_ego.env import SumoEnv
+from sumo_rl_ego.sumo_gym_ego.core.config import SumoConfig
+from sumo_rl_ego.sumo_gym_ego.env import SumoEnv
 
 
 config = SumoConfig(

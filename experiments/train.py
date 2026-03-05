@@ -3,11 +3,11 @@ import os
 
 import argparse
 
-from infra.loaders.config_loader import load_config, load_config_from_model
-from infra.builders.env_factory import build_env
+from sumo_rl_ego.infra.loaders.config_loader import load_config, load_config_from_model
+from sumo_rl_ego.infra.builders.env_factory import build_env
 from stable_baselines3.common.env_checker import check_env
-from infra.builders.model_factory import build_model, load_model
-from infra.trainer.trainer import train
+from sumo_rl_ego.infra.builders.model_factory import build_model, load_model
+from sumo_rl_ego.infra.trainer.trainer import train
 
 DEFAULT_CONFIG = "experiments/configs/dqn_highway.yaml"
 DEFAULT_MODEL = None # "models/test_dqn_highway_2026-02-21_18-40-11/model.zip"

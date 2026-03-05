@@ -5,11 +5,11 @@ import argparse
 from tqdm import tqdm
 import pprint
 
-from infra.loaders.config_loader import load_config, load_config_from_model
-from infra.builders.env_factory import build_env
-from infra.builders.model_factory import load_model
-from infra.policy.sb3_policy import SB3Policy
-from infra.loaders.class_loader import build_class
+from sumo_rl_ego.infra.loaders.config_loader import load_config, load_config_from_model
+from sumo_rl_ego.infra.builders.env_factory import build_env
+from sumo_rl_ego.infra.builders.model_factory import load_model
+from sumo_rl_ego.infra.policy.sb3_policy import SB3Policy
+from sumo_rl_ego.infra.loaders.class_loader import build_class
 
 
 DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"

@@ -1,16 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sumo-rl-ego"
 version = "0.1.0"
-description = "Gymnasium wrapper for SUMO with ego vehicle"
-authors = [{name = "Riccardo Venturelli"}]
+description = "SUMO RL environment for ego vehicle"
+authors = [
+    {name = "Riccardo Venturelli"}
+]
 dependencies = [
     "gymnasium",
     "numpy"
 ]
 
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]

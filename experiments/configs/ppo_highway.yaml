@@ -13,22 +13,22 @@ env:
     - scenarios/highway_slow_3lanes/highway.sumocfg
 
   ego:
-    class: plugins.egos.highway_continuous_ego.HighwayContinuousEgo
+    class: sumo_rl_ego.plugins.egos.highway_continuous_ego.HighwayContinuousEgo
     args:
       max_acc: 2.0
       max_dec: -4.0
       lc_duration: 0
 
   obs:
-    class: plugins.observations.speed_dist_ttc_obs.SpeedDistTTCObs
+    class: sumo_rl_ego.plugins.observations.speed_dist_ttc_obs.SpeedDistTTCObs
     args:
 
   reward:
-    class: plugins.rewards.highway_speed_reward.HighwaySpeedReward
+    class: sumo_rl_ego.plugins.rewards.highway_speed_reward.HighwaySpeedReward
     args:
 
   metrics:
-    class: plugins.metrics.my_metrics.MyMetrics
+    class: sumo_rl_ego.plugins.metrics.my_metrics.MyMetrics
     args:
 
 
