@@ -1,0 +1,29 @@
+env:
+  sumocfg_files: 
+    - scenarios/highway_fast/highway.sumocfg
+    - sumo_rl_ego/scenarios/highway_fast_modified/highway.sumocfg
+    - scenarios/highway_lane3_occupied/highway.sumocfg
+    - scenarios/highway_overtake_lane0_3lanes/highway.sumocfg
+    - scenarios/highway_slow_3lanes/highway.sumocfg
+    
+  ego:
+    class: sumo_rl_ego.plugins.egos.highway_discrete_ego.HighwayDiscreteEgo
+    args:
+
+  obs:
+    class: sumo_rl_ego.plugins.observations.highway_obs.HighwayObs
+    args:
+
+  reward:
+    class: sumo_rl_ego.plugins.rewards.highway_fast_reward.HighwayFastReward
+    args:
+
+  metrics:
+    class: sumo_rl_ego.plugins.metrics.termination_action_metrics.TerminationActionMetrics
+    args:
+
+
+sumo_config:
+  ego_id: ego
+  time_step: 0.1
+  max_simulation_time: 200

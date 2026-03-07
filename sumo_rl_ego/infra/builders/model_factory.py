@@ -13,7 +13,7 @@ def build_model(env, cfg: dict, seed: int):
     env.reset(seed=seed)
 
     model = algo(
-        policy=cfg["policy"],
+        # policy=cfg["policy"],
         env=env,
         **cfg["model"],
     )
@@ -27,5 +27,11 @@ def load_model(env, cfg: dict, load_path: str, seed: int):
 
     env.reset(seed=seed)
 
-    model = algo.load(load_path, env=env)  
+    model = algo.load(
+        load_path,
+        env=env,
+        seed=seed,
+        custom_objects=cfg["model"]
+    )
+    
     return model
