@@ -1,5 +1,7 @@
 import traci
 
+from sumo_rl_ego.sumo_gym_ego.core.ego_status import EgoStatus
+
 
 class DomainProxy:
     def __init__(self, traci_domain, overrides=None):
@@ -95,53 +97,46 @@ class SumoSimulation:
             if steps > max_steps:
                 raise RuntimeError("Ego vehicle was not spawned.")
 
+
     def get_ego_status(self, ego_id):
         exists = self.ego_exists(ego_id)
 
-        lane_id = None
-        if exists:
-            try:
-                lane_id = traci.vehicle.getLaneID(ego_id)
-            except traci.TraCIException:
-                exists = False
-
         arrived = ego_id in traci.simulation.getArrivedIDList()
 
-        collided = (
-            ego_id in traci.simulation.getCollidingVehiclesIDList()
-            and not arrived)
+        collided = ego_id in traci.simulation.getCollidingVehiclesIDList()
 
-        off_road = (
-            (self.off_road or lane_id in ("", None))
-            and not arrived
-            and not collided)
+        teleported = ego_id in traci.simulation.getStartingTeleportIDList()
 
-        teleported = (
-            ego_id in traci.simulation.getStartingTeleportIDList()
-            and not arrived
-            and not collided
-            and not off_road)
+        lane_id = traci.vehicle.getLaneID(ego_id)
+        off_road = self.off_road or lane_id in ("", None)
 
-        ego_removed_unknown = (
-            not exists
-            and not arrived
-            and not collided
-            and not off_road
-            and not teleported
-        )
+        # assign status given the following priority
+        if arrived:
+            ego_status = EgoStatus.ARRIVED
 
-        return {
-            "exists": exists,
-            "collided": collided,
-            "teleported": teleported,
-            "arrived": arrived,
-            "off_road": off_road,
-            "removed_unknown": ego_removed_unknown,
-        }
+        elif collided:
+            ego_status = EgoStatus.COLLIDED
+
+        elif off_road:
+            ego_status = EgoStatus.OFF_ROAD
+
+        elif teleported:
+            ego_status = EgoStatus.TELEPORTED
+
+        elif not exists:
+            ego_status = EgoStatus.REMOVED_UNKNOWN
+
+        else:
+            ego_status = EgoStatus.RUNNING
+
+        return ego_status
+
 
     def enable_rl_control(self, ego_id):
-        traci.vehicle.setSpeedMode(ego_id, 0)
-        traci.vehicle.setLaneChangeMode(ego_id, 0)
+        traci.vehicle.setSpeedMode(ego_id, self.config.speed_mode)
+        traci.vehicle.setLaneChangeMode(ego_id, self.config.lane_change_mode)
+        traci.vehicle.setRoutingMode(ego_id, self.config.routing_mode)
+
 
     def ego_exists(self, ego_id):
         return ego_id in traci.vehicle.getIDList()

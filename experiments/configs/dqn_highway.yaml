@@ -7,29 +7,27 @@ meta:
 env:
   sumocfg_files: 
     # - scenarios/highway_fast/highway.sumocfg
-    - scenarios/highway_fast_modified/highway.sumocfg
+    - sumo_rl_ego/scenarios/highway_fast_modified/highway.sumocfg
     # - scenarios/highway_lane3_occupied/highway.sumocfg
     # - scenarios/highway_overtake_lane0_3lanes/highway.sumocfg
     # - scenarios/highway_slow_3lanes/highway.sumocfg
   ego:
     class: sumo_rl_ego.plugins.egos.highway_discrete_ego.HighwayDiscreteEgo
     args:
-      dec_value: -4
   obs:
-    class: sumo_rl_ego.plugins.observations.speed_dist_ttc_obs.SpeedDistTTCObs
+    class: sumo_rl_ego.plugins.observations.highway_obs.HighwayObs
     args:
   reward:
-    class: sumo_rl_ego.plugins.rewards.highway_speed_reward.HighwaySpeedReward
+    class: sumo_rl_ego.plugins.rewards.highway_fast_reward.HighwayFastReward
     args:
-      w_lane_change: -0.5
   metrics:
-    class: sumo_rl_ego.plugins.metrics.my_metrics.MyMetrics
+    class: sumo_rl_ego.plugins.metrics.termination_action_metrics.TerminationActionMetrics
     args:
 
 sumo_config:
   ego_id: ego
-  time_step: 0.5
-  max_steps: 800
+  time_step: 0.1
+  max_simulation_time: 200
 
 
 
@@ -42,7 +40,7 @@ policy: MlpPolicy
 
 model:
   learning_rate: 5.0e-4   # velocità update rete | ↑ impara più veloce ma instabile | ↓ più stabile ma lento
-  gamma: 0.95             # peso reward futuri | ↑ più lungimirante | ↓ più miope
+  gamma: 0.99             # peso reward futuri | ↑ più lungimirante | ↓ più miope
 
   buffer_size: 30000     # dimensione replay buffer | ↑ più stabilità/diversità | ↓ meno memoria, più rumore
   learning_starts: 1000   # step prima di iniziare training | ↑ meno rumore iniziale | ↓ impara prima ma instabile

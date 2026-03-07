@@ -16,7 +16,7 @@ class HighwayDiscreteEgo(BaseEgoController):
 
     def __init__(self, 
                  acc_value=1.0,
-                 dec_value=-4.0,
+                 dec_value=-1.0,
                  lc_duration=0):
     
         self.acc_value = acc_value
@@ -29,7 +29,6 @@ class HighwayDiscreteEgo(BaseEgoController):
     def apply_action(self, action):
         
         time_step = self.sim.config.time_step
-
         speed = self.sim.vehicle.getSpeed(self.ego_id)
 
         # SAME SPEED
@@ -46,7 +45,7 @@ class HighwayDiscreteEgo(BaseEgoController):
             accel = None
 
         if accel is not None:
-            new_speed = max(0.0, speed + accel * time_step)
+            new_speed = speed + accel * time_step
             self.sim.vehicle.setSpeed(self.ego_id, new_speed)
             return
 

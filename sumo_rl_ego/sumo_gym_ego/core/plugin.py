@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 class BaseEnvPlugin(ABC):
@@ -7,13 +7,9 @@ class BaseEnvPlugin(ABC):
     def reset(self):
         pass
 
-    def set_context(self, ctx):
-        self.ctx = ctx
-
-    @property
-    def sim(self):
-        return self.ctx.sim
-
-    @property
-    def ego_id(self):
-        return self.ctx.config.ego_id
+    def bind(self, config, sim, simBus):
+        self.config = config
+        self.sim = sim
+        self.ego_id = config.ego_id
+        self.simBus = simBus
+    

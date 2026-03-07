@@ -5,5 +5,5 @@ from sumo_rl_ego.sumo_gym_ego.core.plugin import BaseEnvPlugin
 class BaseRewardFunction(BaseEnvPlugin):
 
     @abstractmethod
-    def compute(self, action, info):
+    def compute(self, obs, action, next_obs, info):
         pass
