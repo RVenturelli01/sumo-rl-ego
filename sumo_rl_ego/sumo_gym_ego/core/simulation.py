@@ -107,8 +107,9 @@ class SumoSimulation:
 
         teleported = ego_id in traci.simulation.getStartingTeleportIDList()
 
-        lane_id = traci.vehicle.getLaneID(ego_id)
-        off_road = self.off_road or lane_id in ("", None)
+        off_road_sumo = ego_id not in traci.vehicle.getIDList()
+        
+        off_road = self.off_road or off_road_sumo
 
         # assign status given the following priority
         if arrived:

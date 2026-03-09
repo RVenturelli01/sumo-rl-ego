@@ -1,0 +1,14 @@
+# @package _global_
+
+/env: highway_fast
+
+model_path: null
+
+policy:
+  _target_: null
+
+seed: 0
+
+hydra:
+  run:
+    dir: outputs/play/${now:%Y-%m-%d_%H-%M-%S}

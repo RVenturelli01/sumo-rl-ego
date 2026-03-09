@@ -1,0 +1,18 @@
+# @package _global_
+
+/env: highway_fast
+
+/rl: dqn
+
+name: train_${env.name}_${rl.algorithm}
+
+seed: 0
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: outputs/${now:%Y-%m-%d_%H-%M-%S}_${name}
+  sweep:
+    dir: outputs/multirun/${now:%Y-%m-%d_%H-%M-%S}_${name}
+    subdir: ${hydra.job.num}

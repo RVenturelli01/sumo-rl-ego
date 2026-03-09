@@ -1,69 +1,52 @@
-import sys
 import os
 
-import argparse
+import hydra
+from omegaconf import DictConfig, OmegaConf
 from tqdm import tqdm
-import pprint
 
-from sumo_rl_ego.infra.loaders.config_loader import load_config, load_config_from_model
 from sumo_rl_ego.infra.builders.env_factory import build_env
 from sumo_rl_ego.infra.builders.model_factory import load_model
 from sumo_rl_ego.infra.policy.sb3_policy import SB3Policy
-from sumo_rl_ego.infra.loaders.class_loader import build_class
-
-DEFAULT_MODEL = None # "outputs/models/test_dqn_highway_2026-02-21_22-43-05/model.zip"
-DEFAULT_CONFIG = None #"experiments/configs/dqn.yaml"
-DEFAULT_EPISODES = 20
-DEFAULT_SEED = 0
 
 
+@hydra.main(version_base=None, config_path="configs", config_name="exp/eval")
+def main(cfg: DictConfig):
+    
+    print(OmegaConf.to_yaml(cfg))
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config_policy", default=DEFAULT_CONFIG)
-    parser.add_argument("--model", default=DEFAULT_MODEL)
-    parser.add_argument("--episodes", type=int, default=DEFAULT_EPISODES)
-    parser.add_argument("--seed", help="Random seed", default=DEFAULT_SEED, type=int)
-    args = parser.parse_args()
+    env = build_env(cfg.env, seed=cfg.seed)
 
-    if not args.config_policy and not args.model:
-        parser.error("You must provide either --config_policy or --model")
-
-    if args.model:
-        cfg = load_config_from_model(args.model)
-    else:
-        cfg = load_config(args.config_policy)
-
-    # Build env (incapsula SumoConfig + builders vari)
-    env = build_env(cfg, seed=args.seed)
-
-    # Load trained model (SB3Policy wrapper gestito in model_factory)
-    if args.model:
-        model = load_model(env, cfg, load_path=args.model, seed=args.seed)
+    if cfg.model_path:
+        model = load_model(env, cfg.rl, load_path=cfg.model_path, seed=cfg.seed)
         policy = SB3Policy(model=model)
-    elif args.config_policy:
-        policy = build_class(cfg["policy"]["class"], cfg["policy"]["args"])
-        
-    # Rollout loop
-    pbar = tqdm(total=args.episodes, desc="Episodes")
 
-    for _ in range(args.episodes):
-        pbar.update(1)
+    elif cfg.policy._target_:
+        policy = hydra.utils.instantiate(cfg.policy)
 
-        obs, _ = env.reset(seed=args.seed + _)
+    else:
+        raise ValueError("You must provide either model_path or policy._target_")
+
+    pbar = tqdm(total=cfg.episodes, desc="Episodes")
+
+    for ep in range(cfg.episodes):
+
+        obs, _ = env.reset(seed=cfg.seed + ep)
+
         terminated = False
         truncated = False
 
         while not terminated and not truncated:
+
             action = policy.predict(obs)
+
             obs, reward, terminated, truncated, info = env.step(action)
+
+        pbar.update(1)
 
     pbar.close()
     env.close()
 
-    # Global metrics
-    global_metrics = env.metrics_tracker.get_log_metrics()
-    pprint.pprint(global_metrics)
+    env.metrics_tracker.print_log_metrics()
 
 
 if __name__ == "__main__":

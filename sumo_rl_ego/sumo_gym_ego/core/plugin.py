@@ -7,9 +7,9 @@ class BaseEnvPlugin(ABC):
     def reset(self):
         pass
 
-    def bind(self, config, sim, simBus):
+    def bind(self, config, sim, sim_bus):
         self.config = config
         self.sim = sim
         self.ego_id = config.ego_id
-        self.simBus = simBus
+        self.sim_bus = sim_bus
     

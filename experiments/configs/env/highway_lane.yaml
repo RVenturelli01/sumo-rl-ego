@@ -1,6 +1,8 @@
 
 name: highway_fast
 
+description: 
+
 
 sumocfg_files:
   - sumo_rl_ego/scenarios/highway_fast_modified/highway.sumocfg

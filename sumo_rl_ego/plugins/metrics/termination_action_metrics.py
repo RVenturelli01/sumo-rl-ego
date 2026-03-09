@@ -1,8 +1,8 @@
 from statistics import mean, pstdev
 from types import SimpleNamespace
-from enum import IntEnum
 from sumo_rl_ego.sumo_gym_ego.metrics.base import BaseMetricsTracker
 from sumo_rl_ego.sumo_gym_ego.core.ego_status import EgoStatus
+from sumo_rl_ego.plugins.egos.highway_discrete_ego import DiscreteActions
 
 
 """
@@ -27,14 +27,6 @@ Windowing
 Statistics are computed over the last `window` episodes.
 If `window <= 0`, the full history is used.
 """
-
-
-class DiscreteActions(IntEnum):
-    SS = 0     # same speed
-    ACC = 1    # accelerate
-    DEC = 2    # decelerate
-    LCL = 3    # lane change left
-    LCR = 4    # lane change right
 
 
 class TerminationActionMetrics(BaseMetricsTracker):
@@ -124,7 +116,7 @@ class TerminationActionMetrics(BaseMetricsTracker):
         ep = self.episode
         hist = self.history
         
-        termination_reason = info.get("termination_reason", "unknown")
+        event = info.get("event", "unknown")
         step_count = info.get("status", {}).get("step", 0)
 
         avg_speed = self._safe_div(ep.speed_sum, step_count)
@@ -135,12 +127,12 @@ class TerminationActionMetrics(BaseMetricsTracker):
         hist.lengths.append(step_count)
         hist.avg_speeds.append(avg_speed)
 
-        hist.success.append(termination_reason == EgoStatus.ARRIVED.value)
-        hist.collision.append(termination_reason == EgoStatus.COLLIDED.value)
-        hist.off_road.append(termination_reason == EgoStatus.OFF_ROAD.value)
-        hist.teleported.append(termination_reason == EgoStatus.TELEPORTED.value)
-        hist.removed_unknown.append(termination_reason == EgoStatus.REMOVED_UNKNOWN.value)
-        hist.truncated.append(termination_reason == "timeout")
+        hist.success.append(event == EgoStatus.ARRIVED.value)
+        hist.collision.append(event == EgoStatus.COLLIDED.value)
+        hist.off_road.append(event == EgoStatus.OFF_ROAD.value)
+        hist.teleported.append(event == EgoStatus.TELEPORTED.value)
+        hist.removed_unknown.append(event == EgoStatus.REMOVED_UNKNOWN.value)
+        hist.truncated.append(event == "timeout")
 
         hist.action_ss_rate.append(self._safe_div(ep.action_ss_sum, step_count)) 
         hist.action_acc_rate.append(self._safe_div(ep.action_acc_sum, step_count)) 
@@ -159,7 +151,6 @@ class TerminationActionMetrics(BaseMetricsTracker):
             "ep_lcr_rate": hist.action_lcr_rate[-1],
         }
 
-        self.reset()
         return metrics
 
     # =========================================================
@@ -219,3 +210,26 @@ class TerminationActionMetrics(BaseMetricsTracker):
     @staticmethod
     def _safe_div(a, b):
         return a / b if b > 0 else 0.0
+    
+    from collections import defaultdict
+
+    def print_log_metrics(self, window_override=None):
+        metrics = self.get_log_metrics(window_override)
+        window = window_override or self.window
+
+        print(f"\n=== Metrics (last {window} episodes) ===")
+
+        current_section = None
+
+        for k, v in metrics.items():
+
+            if "/" in k:
+                section, name = k.split("/", 1)
+            else:
+                section, name = "other", k
+
+            if section != current_section:
+                print(f"\n{section}:")
+                current_section = section
+
+            print(f"    {name:<20} {v:8.2f}")

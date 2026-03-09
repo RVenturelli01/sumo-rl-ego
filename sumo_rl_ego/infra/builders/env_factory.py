@@ -1,31 +1,53 @@
+import hydra
+from pathlib import Path
+from omegaconf import DictConfig
+
 from sumo_rl_ego.sumo_gym_ego.env import SumoEnv
 from sumo_rl_ego.sumo_gym_ego.core.config import SumoConfig
-from sumo_rl_ego.infra.loaders.class_loader import build_class
+from sumo_rl_ego.infra.utils.project import find_repo_root
+from stable_baselines3.common.env_checker import check_env
 
 
+def _resolve_sumocfg_paths(paths: list[str]) -> list[str]:
+    """Resolve sumocfg paths relative to the repo root."""
+    root = find_repo_root()
+    resolved = []
+    for p in paths:
+        full = root / p
+        if not full.exists():
+            raise FileNotFoundError(f"Scenario config not found: {full}")
+        resolved.append(str(full))
+    return resolved
 
-def build_env(cfg: dict, seed: int) -> SumoEnv:
+
+def build_env(cfg: DictConfig, seed: int) -> SumoEnv:
     print("\n[INFRA] Building sumo gym environment...")
 
-    sumo_cfg = SumoConfig(**cfg["sumo_config"], seed=seed) 
+    sumo_cfg = SumoConfig(**cfg.sumo_config, seed=seed)
 
-    ego_class = build_class(cfg["env"]["ego"]["class"], args=cfg["env"]["ego"]["args"])
-    obs_class = build_class(cfg["env"]["obs"]["class"], args=cfg["env"]["obs"]["args"])
-    reward_class = build_class(cfg["env"]["reward"]["class"], args=cfg["env"]["reward"]["args"])
-    metrics_class = build_class(cfg["env"]["metrics"]["class"], args=cfg["env"]["metrics"]["args"])
+    ego_class = hydra.utils.instantiate(cfg.ego)
+    obs_class = hydra.utils.instantiate(cfg.obs)
+    reward_class = hydra.utils.instantiate(cfg.reward)
+    metrics_class = hydra.utils.instantiate(cfg.metrics)
 
     env = SumoEnv(
-                sumocfg_files=cfg["env"]["sumocfg_files"],
-                config=sumo_cfg,
-                ego_controller=ego_class,
-                obs_builder=obs_class,
-                reward_function=reward_class,
-                metrics_tracker=metrics_class)  
-    
+        sumocfg_files=_resolve_sumocfg_paths(cfg.sumocfg_files),
+        config=sumo_cfg,
+        ego_controller=ego_class,
+        obs_builder=obs_class,
+        reward_function=reward_class,
+        metrics_tracker=metrics_class,
+    )
+
     print("Env loaded with the following components:")
-    print(cfg["env"]["ego"]["class"])
-    print(cfg["env"]["obs"]["class"])
-    print(cfg["env"]["reward"]["class"])
-    print(cfg["env"]["metrics"]["class"])
+    print(f"  ego:     {cfg.ego._target_}")
+    print(f"  obs:     {cfg.obs._target_}")
+    print(f"  reward:  {cfg.reward._target_}")
+    print(f"  metrics: {cfg.metrics._target_}")
+
+    print("\nCheck environment consistency...")
+    check_env(env, warn=True)
+    print("Done")
 
     return env
+

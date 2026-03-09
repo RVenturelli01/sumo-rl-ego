@@ -29,6 +29,8 @@ model:
 
 training:
   # 60k is very low for highway navigation; 200k-500k is usually the sweet spot for stability
-  total_timesteps: 30000 
+  # total_timesteps: 30000 
+  total_timesteps: 2000
   log_interval: 20
-  reset_num_timesteps: true
+  # reset_num_timesteps: true
+  reset_num_timesteps: false

@@ -1,6 +1,6 @@
 import numpy as np
 from sumo_rl_ego.plugins.rewards.highway_basic_reward import HighwayBasicReward
-from sumo_rl_ego.plugins.rewards.components import*
+from sumo_rl_ego.plugins.rewards.components import progress_reward
 
 
 class HighwayFastReward(HighwayBasicReward):
@@ -26,7 +26,7 @@ class HighwayFastReward(HighwayBasicReward):
 
         reward += self.w_step
 
-        pos = self.sim.vehicle.getPosition(self.ego_id)[0]
+        pos = self.sim.vehicle.getLanePosition(self.ego_id)
         time_step = self.config.time_step
 
         if self.prev_pos is not None:
