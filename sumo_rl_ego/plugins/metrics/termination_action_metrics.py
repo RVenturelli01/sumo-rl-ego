@@ -211,7 +211,6 @@ class TerminationActionMetrics(BaseMetricsTracker):
     def _safe_div(a, b):
         return a / b if b > 0 else 0.0
     
-    from collections import defaultdict
 
     def print_log_metrics(self, window_override=None):
         metrics = self.get_log_metrics(window_override)

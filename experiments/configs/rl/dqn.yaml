@@ -2,33 +2,33 @@ algorithm: DQN
 
 model:
   policy: MlpPolicy
-  
-  # Increased learning rate slightly for faster convergence in short windows
-  learning_rate: 5.0e-4 
-  gamma: 0.9 # Lowered gamma: in congestion, immediate rewards (gaps/speed) matter more than long-term future states
 
-  buffer_size: 200000 # Larger buffer to store more diverse "near-miss" or "successful pass" scenarios
-  learning_starts: 1000
-  batch_size: 128 # Smaller batch size often helps DQN stabilize faster in discrete action spaces
+  learning_rate: 3e-4
 
-  train_freq: 1 # Update every step to maximize learning from every interaction
+  gamma: 0.99
+
+  buffer_size: 300000
+
+  learning_starts: 5000
+
+  batch_size: 128
+
+  train_freq: 4
   gradient_steps: 1
 
-  target_update_interval: 1000 # Faster target updates to keep up with the changing traffic patterns
+  target_update_interval: 5000
 
-  # More aggressive exploration curve
-  exploration_fraction: 0.3 # Reach final_eps sooner so it can spend more time refining the policy
+  exploration_fraction: 0.4
   exploration_initial_eps: 1.0
-  exploration_final_eps: 0.02 # Lower final epsilon to ensure it follows the learned optimal path
+  exploration_final_eps: 0.05
 
   policy_kwargs:
-    # Deeper network to handle the 20-feature input complexity
     net_arch: [256, 256]
 
   verbose: 1
 
+
 training:
-  # 60k is very low for highway navigation; 200k-500k is usually the sweet spot for stability
-  total_timesteps: 30000 
-  log_interval: 20
+  total_timesteps: 400000
+  log_interval: 50
   reset_num_timesteps: true

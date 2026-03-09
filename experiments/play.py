@@ -2,8 +2,6 @@ import hydra
 from omegaconf import DictConfig, OmegaConf
 import traci
 
-from stable_baselines3.common.env_checker import check_env
-
 from sumo_rl_ego.infra.builders.env_factory import build_env
 from sumo_rl_ego.infra.builders.model_factory import load_model
 from sumo_rl_ego.infra.policy.sb3_policy import SB3Policy
@@ -11,6 +9,7 @@ from sumo_rl_ego.infra.policy.sb3_policy import SB3Policy
 
 @hydra.main(version_base=None, config_path="configs", config_name="play")
 def main(cfg: DictConfig):
+
     print(OmegaConf.to_yaml(cfg))
 
     # Force GUI mode
@@ -20,15 +19,13 @@ def main(cfg: DictConfig):
 
     env = build_env(env_cfg, seed=cfg.seed)
 
-    print("\nCheck environment consistency...")
-    check_env(env, warn=True)
-    print("Done")
-
     if cfg.model_path:
         model = load_model(env, cfg.rl, load_path=cfg.model_path, seed=cfg.seed)
         policy = SB3Policy(model=model)
+
     elif cfg.policy._target_:
         policy = hydra.utils.instantiate(cfg.policy)
+        
     else:
         raise ValueError("You must provide either model_path or policy._target_")
 
@@ -48,11 +45,11 @@ def main(cfg: DictConfig):
     while True:
         action = policy.predict(obs)
 
-        # print("=" * 20 + "ACTION" + "=" * 20)
-        # env.ego_controller.print_action(action)
-        # print("=" * 20 + "OBSERVATION" + "=" * 20)
-        # env.obs_builder.print_obs(obs)
-        # print("=" * 50)
+        print("=" * 20 + "ACTION" + "=" * 20)
+        env.ego_controller.print_action(action)
+        print("=" * 20 + "OBSERVATION" + "=" * 20)
+        env.obs_builder.print_obs(obs)
+        print("=" * 50)
 
         # print("\nScenario: ",env.config.sumocfg_file)
         input("Press Enter to step...\n")

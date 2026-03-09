@@ -14,6 +14,8 @@ left_back   : distance, rel_speed, ttc
 
 right_front : distance, rel_speed, ttc
 right_back  : distance, rel_speed, ttc
+
+(all the observations are normalized)
 '''
 
 class HighwayObs(BaseObservationBuilder):
@@ -22,7 +24,7 @@ class HighwayObs(BaseObservationBuilder):
         self,
         max_speed=50.0,
         max_distance=200.0,
-        max_ttc=30.0,
+        max_ttc=20.0,
     ):
 
         self.max_speed = max_speed
@@ -32,24 +34,31 @@ class HighwayObs(BaseObservationBuilder):
         n_features = 20
 
         self.observation_space = Box(
-            low=-np.inf,
-            high=np.inf,
+            low=-1.0,
+            high=1.0,
             shape=(n_features,),
             dtype=np.float32
         )
 
     # ============================================================
-    # CLIPPING
+    # NORMALIZATION
     # ============================================================
 
-    def clip_speed(self, v):
-        return np.clip(v, -self.max_speed, self.max_speed)
+    def norm_speed(self, v):
+        v = np.clip(v, 0, self.max_speed)
+        return v / self.max_speed
+    
+    def norm_rel_speed(self, v):
+        v = np.clip(v, -self.max_speed, self.max_speed)
+        return v / self.max_speed
 
-    def clip_distance(self, d):
-        return np.clip(d, -self.max_distance, self.max_distance)
+    def norm_distance(self, d):
+        d = np.clip(d, -self.max_distance, self.max_distance)
+        return d / self.max_distance
 
-    def clip_ttc(self, ttc):
-        return np.clip(ttc, 0.0, self.max_ttc)
+    def norm_ttc(self, ttc):
+        ttc = np.clip(ttc, 0.0, self.max_ttc)
+        return ttc / self.max_ttc
 
 
     # ============================================================
@@ -85,9 +94,9 @@ class HighwayObs(BaseObservationBuilder):
         ttc = self.compute_ttc(abs(distance), rel_speed)
 
         return [
-            self.clip_distance(distance),
-            self.clip_speed(rel_speed),
-            self.clip_ttc(ttc)
+            self.norm_distance(distance),
+            self.norm_rel_speed(rel_speed),
+            self.norm_ttc(ttc)
         ]
 
     # ============================================================
@@ -126,7 +135,7 @@ class HighwayObs(BaseObservationBuilder):
     def build_obs(self):
 
         ego_speed = self.sim.vehicle.getSpeed(self.ego_id)
-        ego_speed_norm = self.clip_speed(ego_speed)
+        ego_speed_norm = self.norm_speed(ego_speed)
 
         lane_index = self.sim.vehicle.getLaneIndex(self.ego_id)
 
@@ -169,12 +178,13 @@ class HighwayObs(BaseObservationBuilder):
         )
 
         def decode_vehicle(i):
-            d = obs[i] * self.max_distance
-            rel_v = (obs[i+1] * 2 - 1) * self.max_speed
-            ttc = obs[i+2] * self.max_ttc
-            return d, rel_v, ttc
 
-        # ordine delle osservazioni
+            distance = obs[i] * self.max_distance
+            rel_speed = obs[i+1] * self.max_speed
+            ttc = obs[i+2] * self.max_ttc
+
+            return distance, rel_speed, ttc
+
         idx = {
             "same_front": 2,
             "same_back": 5,

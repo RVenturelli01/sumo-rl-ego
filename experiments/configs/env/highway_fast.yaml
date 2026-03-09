@@ -7,7 +7,7 @@ sumocfg_files:
 
 ego:
   _target_: sumo_rl_ego.plugins.egos.highway_discrete_ego.HighwayDiscreteEgo
-
+  
 obs:
   _target_: sumo_rl_ego.plugins.observations.highway_obs.HighwayObs
 
