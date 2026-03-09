@@ -1,368 +1,154 @@
 # SUMO RL Ego
 
-A modular reinforcement learning framework for training and evaluating ego-vehicle policies in SUMO using Gymnasium-style environments and Stable-Baselines3.
-
-This repository provides a configurable and research-oriented foundation for RL experimentation in traffic simulation, combining a modular environment, config-driven pipelines, and built-in benchmarks.
-
-Core features:
-- A reusable Gymnasium wrapper around SUMO
-- Modular components for observations, rewards, metrics, and ego logic (plugin-based)
-- Training and evaluation pipelines with YAML-driven experiments
-- Built-in benchmark scenarios for reproducible comparisons
-- Unified interface for RL and handcrafted policies
+A modular reinforcement learning framework for ego-vehicle policy training and evaluation in [SUMO](https://eclipse.dev/sumo/), built on [Gymnasium](https://gymnasium.farama.org/) and [Stable-Baselines3](https://stable-baselines3.readthedocs.io/).
 
 ---
 
-🎯 Motivation
+## Key Contributions
 
-The SUMO ecosystem for reinforcement learning is still fragmented and largely outdated. Many existing repositories rely on deprecated Gym integrations, are no longer maintained, or are tightly coupled research codebases that are hard to reuse or extend.
+1. **Gymnasium-Compatible SUMO Wrapper** — A modern `SumoEnv` (replacing deprecated Gym) with a plugin architecture: swap ego controllers, observation builders, reward functions, and metrics without touching core code.
 
-In particular, there is no widely adopted, modern framework that provides:
-- a clean Gymnasium-compatible interface for SUMO
-- fast iteration for ego-vehicle policy development
-- modular, reusable experimentation pipelines
+2. **Plugin-Based Extensibility** — Every environment component (ego controller, observation builder, reward function, metrics tracker) is a plugin resolved at runtime via Hydra's `_target_` mechanism. Swap or add components without modifying core code.
 
-Additionally, the field lacks standardized benchmarks for ego-vehicle autonomy in SUMO. Most works rely on custom, non-reproducible scenarios, making comparisons across methods difficult.
+3. **Hydra-Driven Experiment Pipeline** — Fully declarative YAML configs with composable groups (`env/`, `rl/`), CLI overrides, multirun sweeps, and automatic timestamped output directories.
 
-This repository aims to provide a modern, lightweight, and research-friendly foundation for reproducible ego-vehicle RL experimentation in SUMO.
+4. **Standardized Benchmark Scenarios** — 19 curated SUMO scenarios (highways, roundabouts, T/+ intersections) for reproducible cross-method comparisons.
 
----
-
-## ✨ Contributions
-
-### 1. Modular Gymnasium Wrapper for SUMO
-
-A clean and extensible Gymnasium-compatible wrapper around SUMO designed for **plug-and-play experimentation**.
-
-The environment follows a modular architecture where key components are implemented as plugins:
-
-* observation builder
-* reward function
-* ego-vehicle logic
-* metrics
-
-Users can extend or replace components without modifying the core environment, enabling fast iteration and reusable research modules.
+5. **Unified Policy Interface** — Both RL agents (`SB3Policy`) and handcrafted heuristics (`BasePolicy`) share the same `predict(obs) → action` interface for direct comparison.
 
 ---
 
-### 2. Lightweight RL Experimentation Framework
+## Repository Structure
 
-A structured pipeline to support the full experimentation lifecycle:
-
-* training
-* evaluation
-* GUI debugging / rollout
-
-Environment and policy creation are handled through reusable builders, reducing boilerplate and enforcing consistent experiment structure.
-
----
-
-### 3. Hydra-Driven Configuration System
-
-All experiments are fully defined through composable YAML configuration files managed by [Hydra](https://hydra.cc/).
-
-Independent config groups (`env/`, `rl/`) are composed at runtime, with full CLI override support, multirun sweeps, and automatic output directory management.
-
-
----
-
-### 4. Built-in SUMO Benchmark Scenarios
-
-The repository includes curated SUMO scenarios that act as **standardized benchmarks**, such as:
-
-* highway driving
-* intersections
-* roundabouts
-
-These scenarios allow:
-
-* fair comparison between policies
-* evaluation of generalization
-* reproducible baselines across experiments
-
-They can be used as a benchmark suite for RL research in traffic simulation.
-
----
-
-### 5. Unified Interface for RL and Handcrafted Policies
-
-The framework supports both:
-
-* reinforcement learning agents
-* manually designed policies
-
-All policies implement a common interface, enabling:
-
-* direct RL vs rule-based comparisons
-* strong baselines
-* hybrid approaches (heuristics + learning)
-
----
-
-## 🗂 Repository Structure
-
-```text
+```
 sumo_rl_ego/
-├─ sumo_gym_ego/
-│  ├─ env.py          # Core Gymnasium SUMO wrapper
-│  ├─ ego/            # Ego-vehicle interfaces and implementations
-│  ├─ observation/    # Observation spaces and feature builders
-│  ├─ reward/         # Reward functions and shaping logic
-│  └─ metrics/        # Metrics tracking and evaluation utilities
+├─ sumo_gym_ego/            # Core Gymnasium wrapper
+│  ├─ env.py                #   SumoEnv (reset / step / render)
+│  ├─ core/                 #   SumoSimulation, SumoConfig, SimBus, EgoStatus, BaseEnvPlugin
+│  ├─ ego/                  #   EgoController base + default implementation
+│  ├─ observation/          #   ObservationBuilder base + default
+│  ├─ reward/               #   RewardFunction base + default
+│  └─ metrics/              #   MetricsTracker base + default
 │
-├─ infra/
-│  ├─ builders/       # Environment and model builders (Hydra instantiate)
-│  ├─ trainer/        # Training loop
-│  ├─ utils/          # Callbacks, helpers
-│  └─ policy/         # Unified interface for RL and handcrafted policies
+├─ plugins/                 # Drop-in plugin implementations
+│  ├─ egos/                 #   HighwayDiscreteEgo, HighwayContinuousEgo, HighwayOneLaneDiscreteEgo
+│  ├─ observations/         #   HighwayObs
+│  ├─ rewards/              #   HighwayBasic/Fast/Lane/SmoothReward + composable components
+│  ├─ metrics/              #   TerminationActionMetrics
+│  └─ policies/             #   Handcrafted heuristic policies (MyPolicy)
 │
-├─ plugins/
-│  ├─ egos/           # Custom ego logic implementations
-│  ├─ observations/   # Custom observation plugins
-│  ├─ rewards/        # Custom reward plugins
-│  ├─ policies/       # Custom handcrafted policies
-│  └─ metrics/        # Custom evaluation metrics
+├─ infra/                   # Experiment infrastructure
+│  ├─ builders/             #   env_factory (build_env), model_factory (build_model, load_model)
+│  ├─ trainer/              #   train() loop
+│  ├─ policy/               #   BasePolicy (ABC), SB3Policy wrapper
+│  └─ utils/                #   CustomLogsCallback, find_repo_root
 │
-└─ scenarios/         # Pre-built SUMO benchmark scenarios
+└─ scenarios/               # Curated SUMO .sumocfg benchmarks
+   ├─ highway_fast/         #   (+ highway_fast_modified, highway_slow_3lanes, …)
+   ├─ roundabout/
+   ├─ t_cross_3_way/        #   (+ empty, front_car, po, rand_speed, slow, …)
+   ├─ t_cross_5_way/        #   (+ no_car, same_pr)
+   └─ …                     #   19 scenarios total
 
-experiments/
-├─ configs/
-│  ├─ config.yaml     # Training config root (Hydra)
-│  ├─ finetune.yaml   # Fine-tuning config root (Hydra)
-│  ├─ eval.yaml       # Evaluation config root (Hydra)
-│  ├─ debug.yaml      # Debug GUI config root (Hydra)
-│  ├─ env/            # Environment config group
-│  ├─ rl/             # RL algorithm config group
-│  └─ experiment/     # Named experiment presets
-├─ train.py           # Training from scratch
-├─ finetune.py        # Fine-tuning from a saved model
-├─ eval.py            # Evaluation entry point
-└─ debug_gui.py       # GUI rollout and inspection
+experiments/                # Entry-point scripts + Hydra configs
+├─ train.py  finetune.py  eval.py  play.py
+└─ configs/
+   ├─ exp/                  #   Root configs per entry point (train, finetune, eval, play)
+   ├─ env/                  #   Environment groups (highway_fast, highway_lane, highway_smooth)
+   └─ rl/                   #   Algorithm groups (dqn, ppo, dqn_finetune)
 
-outputs/              # Auto-generated by Hydra (timestamped run dirs)
-tests/
+outputs/                    # Auto-generated timestamped run dirs (model, monitor, TensorBoard, config)
 ```
 
-The structure separates:
-
-* **core environment** (stable)
-* **plugins** (experimental components)
-* **experiments** (entry points + Hydra configs)
-
-This encourages clean research workflows and easier reproducibility.
-
 ---
 
-## ⚙️ Configuration System (Hydra)
+## User Guide
 
-The project uses [Hydra](https://hydra.cc/) for configuration management. Configs are composed from independent **config groups** (`env/`, `rl/`) that are merged at runtime.
+### Installation
 
-### Config Groups
+```bash
+pip install -e .
+```
+
+Requires a working [SUMO installation](https://sumo.dlr.de/docs/Installing/index.html) with `SUMO_HOME` set.
+
+### Running Experiments
+
+All entry points live in `experiments/` and are Hydra-powered. Run from the `sumo-rl-ego/` directory. Any config value can be overridden from the CLI:
+
+```bash
+# Example: training
+python experiments/train.py                         
+python experiments/train.py rl=ppo env=highway_lane seed=42
+python experiments/train.py rl.model.learning_rate=1e-4 rl.training.total_timesteps=100000
+
+# Multirun sweeps
+python experiments/train.py --multirun rl.model.learning_rate=1e-3,3e-4,1e-4 seed=0,1,2
+```
+
+### Configuration
+
+Configs are composed from independent groups merged at runtime:
 
 | Group | Purpose | Examples |
 |-------|---------|----------|
-| `env/` | SUMO environment, ego, obs, reward, metrics | `highway_fast`, `highway_fast_multiple` |
-| `rl/` | RL algorithm and hyperparameters | `dqn`, `ppo` |
-| `experiment/` | Named presets (override all groups at once) | `highway_dqn_fast`, `highway_ppo_fast` |
+| `env/` | Scenario, ego, obs, reward, metrics | `highway_fast`, `highway_smooth` |
+| `rl/` | Algorithm + hyperparameters | `dqn`, `ppo` |
+| `exp/` | Root config per entry point (sets group defaults) | `train`, `eval` |
 
-### Config Roots
-
-Each entry point has its own Hydra config root:
-
-| Script | Config | Purpose |
-|--------|--------|---------|
-| `train.py` | `train.yaml` | Training from scratch |
-| `finetune.py` | `finetune.yaml` | Fine-tuning a saved model |
-| `eval.py` | `eval.yaml` | Evaluation rollouts |
-| `debug_gui.py` | `debug.yaml` | GUI debugging |
-
-### Training Config
-
-`experiments/configs/config.yaml` defines defaults:
+Example root config:
 
 ```yaml
-defaults:
-  - env: highway_fast
-  - rl: dqn
-  - _self_
-
-meta:
-  name: train_${rl.algorithm}_${env.name}
+# exp/train.yaml
+env: highway_fast
+rl: dqn
+name: train_${rl.algorithm}_${name}
 seed: 0
 ```
 
-### Fine-tuning Config
+### Extending the Framework
 
-`experiments/configs/finetune.yaml` requires `model_path`:
+To add a new plugin (e.g. a custom reward):
 
-```yaml
-defaults:
-  - env: highway_fast
-  - rl: dqn
-  - _self_
-
-model_path: ???   # mandatory — Hydra errors if not provided
-seed: 0
-```
-
-### Output Directory
-
-Hydra auto-creates a timestamped output directory for each run:
-
-```
-outputs/2026-03-08_20-52-30_train_DQN_highway_fast/
-├─ .hydra/            # Full merged config + overrides (auto-saved by Hydra)
-│  ├─ config.yaml
-│  ├─ overrides.yaml
-│  └─ hydra.yaml
-├─ model.zip          # Trained model
-├─ monitor.csv        # SB3 monitor logs
-└─ tensorboard/       # TensorBoard logs
-```
+1. Create a class inheriting from the appropriate base (`RewardFunction`, `EgoController`, `ObservationBuilder`, `MetricsTracker`, or `BasePolicy`) under `plugins/`.
+2. Reference it in an env config via its Hydra `_target_` path:
+   ```yaml
+   reward:
+     _target_: sumo_rl_ego.plugins.rewards.my_reward.MyReward
+     weight_progress: 1.0
+   ```
+3. Run as usual — no core code changes needed.
 
 ---
 
-## 🚀 CLI Usage
+## Infra API Reference
 
-All entry points are Hydra-powered. Run from the `sumo-rl-ego/` root directory.
+The `sumo_rl_ego.infra` module exposes reusable building blocks for custom training pipelines.
 
-### Training
+#### Builders
 
-```bash
-# Default training (highway_fast + DQN)
-python experiments/train.py
+| Function | Description |
+|----------|-------------|
+| `build_env(cfg, seed) → SumoEnv` | Instantiates a fully configured SUMO environment from a Hydra config (ego, obs, reward, metrics, scenario paths). |
+| `build_model(env, cfg, seed)` | Creates a new SB3 model (DQN, PPO) with hyperparameters from config. |
+| `load_model(env, cfg, load_path, seed)` | Loads a saved SB3 model from disk, optionally overriding hyperparameters. |
 
-# Swap RL algorithm
-python experiments/train.py rl=ppo
+#### Training
 
-# Swap environment and algorithm
-python experiments/train.py env=highway_fast_multiple rl=ppo
+| Function | Description |
+|----------|-------------|
+| `train(model, cfg)` | Runs `model.learn()` with training params from config and a `CustomLogsCallback` for TensorBoard metric bridging. |
 
-# Override a single hyperparameter
-python experiments/train.py rl.model.learning_rate=1e-5
+#### Policy Interface
 
-# Override multiple hyperparameters
-python experiments/train.py rl.model.learning_rate=1e-5 rl.training.total_timesteps=100000
+| Class | Description |
+|-------|-------------|
+| `BasePolicy` (ABC) | Abstract interface: `predict(obs) → action` and optional `reset()`. Inherit this for handcrafted policies. |
+| `SB3Policy(BasePolicy)` | Wraps any saved SB3 model into the `BasePolicy` interface (deterministic prediction). |
 
-# Set seed
-python experiments/train.py seed=42
+#### Utilities
 
-# Use a named experiment preset
-python experiments/train.py +experiment=highway_dqn_fast
-```
-
-### Fine-tuning
-
-```bash
-# Fine-tune from saved model (model_path is mandatory)
-python experiments/finetune.py \
-  model_path=outputs/2026-03-08_20-52-30_train_DQN_highway_fast/model.zip
-
-# Fine-tune with adjusted hyperparameters
-python experiments/finetune.py \
-  model_path=outputs/.../model.zip \
-  rl.model.learning_rate=1e-4 \
-  rl.model.exploration_fraction=0.1
-
-# Fine-tune with a different environment
-python experiments/finetune.py \
-  model_path=outputs/.../model.zip \
-  env=highway_fast_multiple
-```
-
-### Evaluation
-
-```bash
-# Evaluate a trained model
-python experiments/eval.py \
-  eval.model_path=outputs/2026-03-08_20-52-30_train_DQN_highway_fast/model.zip
-
-# Evaluate with more episodes
-python experiments/eval.py \
-  eval.model_path=outputs/.../model.zip \
-  eval.episodes=50
-
-# Evaluate a handcrafted policy
-python experiments/eval.py \
-  eval.policy._target_=sumo_rl_ego.plugins.policies.my_policy.MyPolicy
-```
-
-### Debug GUI
-
-```bash
-# Debug a trained model with SUMO GUI
-python experiments/debug_gui.py \
-  debug.model_path=outputs/.../model.zip
-
-# Debug a handcrafted policy with SUMO GUI
-python experiments/debug_gui.py \
-  debug.policy._target_=sumo_rl_ego.plugins.policies.my_policy.MyPolicy
-```
-
-### Hydra Multirun (Sweeps)
-
-```bash
-# Sweep over learning rates
-python experiments/train.py --multirun \
-  rl.model.learning_rate=1e-3,3e-4,1e-4
-
-# Sweep over seeds
-python experiments/train.py --multirun seed=0,1,2,3,4
-
-# Grid sweep: learning rate x seed
-python experiments/train.py --multirun \
-  rl.model.learning_rate=1e-3,3e-4,1e-4 seed=0,1,2
-```
-
-### Useful Hydra Flags
-
-```bash
-# Print the full merged config without running
-python experiments/train.py --cfg job
-
-# Print config groups
-python experiments/train.py --cfg hydra
-
-# Show what overrides are available
-python experiments/train.py --info config
-
-# Override output directory
-python experiments/train.py hydra.run.dir=outputs/my_custom_run
-```
-
----
-
-## 🚀 Typical Research Workflow
-
-1. Select a benchmark SUMO scenario
-2. Choose or create config group files (`env/`, `rl/`)
-3. Run training with CLI overrides or named experiment presets
-4. Evaluate across scenarios using `eval.py`
-5. Compare results using shared metrics and TensorBoard
-
----
-
-## 📚 Academic Use
-
-This framework is suitable for:
-
-* RL research in autonomous driving
-* benchmarking policy generalization
-* ablation studies on rewards/observations
-* RL vs classical control comparisons
-* reproducible experimental sections in papers
-
----
-
-## 🛠 Use Cases
-
-* Reinforcement learning experimentation on traffic behaviors
-* Rapid prototyping of environment designs
-* Benchmarking RL algorithms across scenarios
-* Comparing learned and rule-based policies
-
----
-
-## 📌 Notes
-
-The project intentionally favors clarity and modularity over heavy abstractions. It is designed as a strong baseline for research projects and as a foundation for more advanced SUMO-based RL environments.
+| Symbol | Description |
+|--------|-------------|
+| `CustomLogsCallback` | SB3 callback that forwards custom metrics from env `info["log"]` to the training logger. |
+| `find_repo_root()` | Locates the repository root by searching parent directories for marker files. |
