@@ -1,20 +1,12 @@
 import numpy as np
-from sumo_rl_ego.sumo_gym_ego.core.config import SumoConfig
-from sumo_rl_ego.sumo_gym_ego.env import SumoEnv
+import sumo_rl_ego as sre
 
-
-config = SumoConfig(
-    sumocfg_file="scenarios/highway_fast/highway.sumocfg",
-    use_gui=False,
-    ego_id="ego",
-    time_step=0.1,
-)
-
-env = SumoEnv(sumocfg_files=[config.sumocfg_file], 
-              config=config)
+env = sre.make_env("highway_discrete_v1", use_gui=False)
 
 obs, info = env.reset()
-print("Initial observation:", obs)
+
+print("\n--- ENV RESET ---")
+print("Initial observation:", np.round(obs, 3))
 
 total_reward = 0
 
@@ -26,20 +18,33 @@ for step in range(10):
     total_reward += reward
 
     print(
-        f"step={step} | "
+        f"[step {step:02d}] "
         f"action={action} | "
-        f"reward={reward:.3f} | "
-        f"terminated={terminated} | "
-        f"truncated={truncated}"
+        f"reward={reward:6.3f} | "
+        f"term={terminated} | "
+        f"trunc={truncated}"
     )
 
     if terminated or truncated:
-        print("Episode ended")
-        print("Final info:", info)
+
+        print("\n--- EPISODE ENDED ---")
+
+        event = info.get("event", "unknown")
+        metrics = info.get("metrics", {}).get("episode", {})
+
+        print(f"event: {event}")
+
+        if metrics:
+            print("episode metrics:")
+            for k, v in metrics.items():
+                print(f"  {k:15s}: {v}")
+
         break
 
 
-print("Total reward:", total_reward)
+print("\n--- SUMMARY ---")
+print(f"Total reward: {total_reward:.3f}")
 
 env.close()
+
 print("Test finished.")

@@ -1,0 +1,32 @@
+algo:
+  algorithm: DQN
+  model:
+    policy: MlpPolicy
+    learning_rate: 0.0003
+    gamma: 0.99
+    buffer_size: 200000
+    learning_starts: 5000
+    batch_size: 128
+    train_freq: 4
+    gradient_steps: 1
+    target_update_interval: 5000
+    exploration_fraction: 0.3
+    exploration_initial_eps: 1.0
+    exploration_final_eps: 0.05
+    policy_kwargs:
+      net_arch:
+      - 128
+      - 128
+    verbose: 1
+  training:
+    total_timesteps: 1000
+    log_interval: 50
+    reset_num_timesteps: true
+env: highway_discrete_v1
+resources:
+  n_envs: 1
+  device: cpu
+name: train_${env}_${algo.algorithm}
+seed: 0
+checkpoint:
+  load_path: null

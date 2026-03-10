@@ -1,0 +1,29 @@
+defaults:
+  - algo: dqn
+  - _self_
+
+env: "highway_discrete_v1"
+
+resources:
+  n_envs: 4
+  device: cpu
+
+
+name: train_${env}_${algo.algorithm}
+
+
+seed: 0
+
+
+checkpoint:
+  load_path: null
+
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: outputs/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}
+  sweep:
+    dir: outputs/multirun/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}
+    subdir: ${hydra.job.num}

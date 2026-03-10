@@ -1,30 +1,26 @@
-import os
-
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 from tqdm import tqdm
 
-from sumo_rl_ego.infra.builders.env_factory import build_env
-from sumo_rl_ego.infra.builders.model_factory import load_model
-from sumo_rl_ego.infra.policy.sb3_policy import SB3Policy
+import sumo_rl_ego as sre
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="exp/eval")
+@hydra.main(version_base=None, config_path="configs", config_name="eval.yaml")
 def main(cfg: DictConfig):
-    
-    print(OmegaConf.to_yaml(cfg))
 
-    env = build_env(cfg.env, seed=cfg.seed)
+    if cfg.model_path is not None:
+        cfg_old = sre.load_run(cfg.model_path)
+        env = sre.make_env(cfg_old.env, seed=cfg.seed)
+        model = sre.load_model(env=env, cfg=cfg_old.algo, seed=cfg.seed, load_path=cfg.model_path)
+        policy = sre.policies.SB3Policy(model)
 
-    if cfg.model_path:
-        model = load_model(env, cfg.rl, load_path=cfg.model_path, seed=cfg.seed)
-        policy = SB3Policy(model=model)
-
-    elif cfg.policy._target_:
-        policy = hydra.utils.instantiate(cfg.policy)
+    elif cfg.policy_id is not None:
+        env = sre.make_env(cfg.env, seed=cfg.seed)
+        policy = sre.load_policy(cfg.policy_id)
 
     else:
-        raise ValueError("You must provide either model_path or policy._target_")
+        raise ValueError("Either model_path or policy_id must be provided.")
+
 
     pbar = tqdm(total=cfg.episodes, desc="Episodes")
 
@@ -35,10 +31,9 @@ def main(cfg: DictConfig):
         terminated = False
         truncated = False
 
-        while not terminated and not truncated:
+        while not (terminated or truncated):
 
             action = policy.predict(obs)
-
             obs, reward, terminated, truncated, info = env.step(action)
 
         pbar.update(1)
@@ -46,7 +41,29 @@ def main(cfg: DictConfig):
     pbar.close()
     env.close()
 
-    env.metrics_tracker.print_log_metrics()
+    log = env.metrics_tracker.get_log_metrics()
+    print_log(log)
+
+
+
+def print_log(log):
+    groups = {}
+
+    for key, value in log.items():
+        group, name = key.split("/", 1)
+
+        if group not in groups:
+            groups[group] = {}
+
+        groups[group][name] = value
+
+    for group, items in groups.items():
+        print(f"[{group}]")
+        for name, value in items.items():
+            if isinstance(value, float):
+                value = round(value, 3)
+            print(f"  {name:20s} : {value}")
+        print()
 
 
 if __name__ == "__main__":

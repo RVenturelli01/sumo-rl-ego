@@ -1,0 +1,10 @@
+
+env: "highway_discrete_v1"
+
+policy_id: Null
+
+model_path: Null
+
+seed: 0
+
+episodes: 10

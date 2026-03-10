@@ -1,0 +1,31 @@
+algorithm: DQN
+
+model:
+  policy: 'MlpPolicy'
+  learning_rate: 1.0e-4
+  gamma: 0.98
+  buffer_size: 200000
+  
+  # --- MODIFICHE PER 4 ENV PARALLELI ---
+  learning_starts: 10000      # Raddoppiato: con 4 env arrivi a 10k step molto velocemente
+  batch_size: 256             # Aumentato: con più dati in entrata, un batch più grande stabilizza il gradiente
+  
+  train_freq: 1               # Importante: con 4 env, '1' significa che aggiorni ogni 4 campioni raccolti
+  gradient_steps: 1           # Manteniamo 1 per non rallentare troppo la CPU
+  
+  target_update_interval: 2000 # Leggermente aumentato per compensare la velocità di apprendimento
+  # -------------------------------------
+
+  exploration_fraction: 0.5
+  exploration_initial_eps: 1.0
+  exploration_final_eps: 0.05
+  
+  policy_kwargs:
+    net_arch: [256, 256]
+  
+  verbose: 1
+
+training:
+  total_timesteps: 500000
+  log_interval: 100
+  reset_num_timesteps: true

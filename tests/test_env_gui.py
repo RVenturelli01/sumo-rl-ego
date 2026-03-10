@@ -1,23 +1,8 @@
 import traci
-import numpy as np
-from sumo_rl_ego.sumo_gym_ego.core.config import SumoConfig
-from sumo_rl_ego.sumo_gym_ego.env import SumoEnv
+import sumo_rl_ego as sre
 
 
-
-config = SumoConfig(
-    sumocfg_file="scenarios/highway_fast/highway.sumocfg",
-    use_gui=True,
-    #auto_start=False,
-    ego_id="ego",
-    #seed=42,
-    time_step=0.1,
-    # extra_sumo_args=[
-    #     "--delay", "100"
-    # ],
-)
-
-env = SumoEnv(config)
+env = sre.make_env("highway_discrete_v1", use_gui=True)
 
 obs, _ = env.reset()
 traci.gui.trackVehicle("View #0", "ego")

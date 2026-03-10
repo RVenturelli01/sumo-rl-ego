@@ -2,32 +2,25 @@ import hydra
 from omegaconf import DictConfig, OmegaConf
 import traci
 
-from sumo_rl_ego.infra.builders.env_factory import build_env
-from sumo_rl_ego.infra.builders.model_factory import load_model
-from sumo_rl_ego.infra.policy.sb3_policy import SB3Policy
+import sumo_rl_ego as sre
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="play")
+@hydra.main(version_base=None, config_path="configs", config_name="play.yaml")
 def main(cfg: DictConfig):
 
-    print(OmegaConf.to_yaml(cfg))
+    if cfg.model_path is not None:
+        cfg_old = sre.load_run(cfg.model_path)
+        env = sre.make_env(cfg_old.env, seed=cfg.seed, use_gui=True)
+        model = sre.load_model(env=env, cfg=cfg_old.algo, seed=cfg.seed, load_path=cfg.model_path)
+        policy = sre.policies.SB3Policy(model)
 
-    # Force GUI mode
-    env_cfg = OmegaConf.to_container(cfg.env, resolve=True)
-    env_cfg["sumo_config"]["use_gui"] = True
-    env_cfg = OmegaConf.create(env_cfg)
+    elif cfg.policy_id is not None:
+        env = sre.make_env(cfg.env, seed=cfg.seed, use_gui=True)
+        policy = sre.load_policy(cfg.policy_id)
 
-    env = build_env(env_cfg, seed=cfg.seed)
-
-    if cfg.model_path:
-        model = load_model(env, cfg.rl, load_path=cfg.model_path, seed=cfg.seed)
-        policy = SB3Policy(model=model)
-
-    elif cfg.policy._target_:
-        policy = hydra.utils.instantiate(cfg.policy)
-        
     else:
-        raise ValueError("You must provide either model_path or policy._target_")
+        raise ValueError("Either model_path or policy_id must be provided.")
+
 
     obs, _ = env.reset(seed=cfg.seed)
 

@@ -1,0 +1,15 @@
+from pathlib import Path
+
+
+POLICY_REGISTRY = {}
+
+
+def register_policy(name):
+    def decorator(cls):
+        POLICY_REGISTRY[name] = cls
+        return cls
+    return decorator
+
+
+def list_policies():
+    return list(POLICY_REGISTRY.keys())
