@@ -1,5 +1,5 @@
 
-env: "highway_discrete_v1"
+env: "highway_discrete_v2"
 
 policy_id: Null
 

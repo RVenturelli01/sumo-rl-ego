@@ -2,7 +2,7 @@ defaults:
   - algo: dqn
   - _self_
 
-env: "highway_discrete_v1"
+env: "highway_discrete_v2"
 
 resources:
   n_envs: 4
@@ -11,9 +11,9 @@ resources:
 
 name: train_${env}_${algo.algorithm}
 
-
 seed: 0
 
+note: 
 
 checkpoint:
   load_path: null

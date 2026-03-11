@@ -60,12 +60,15 @@ class NeighborObs(BaseObservationBuilder):
     # TTC
     # ============================================================
 
-    def compute_ttc(self, distance, rel_speed):
+    def compute_ttc(self, distance, rel_speed, sign):
 
-        if rel_speed <= 0:
+        closing_speed = rel_speed if sign == 1 else -rel_speed
+
+        if closing_speed <= 0:
             return self.max_ttc
 
-        return min(distance / rel_speed, self.max_ttc)
+        return distance / closing_speed
+            
 
     # ============================================================
     # NEIGHBOR EXTRACTION
@@ -75,18 +78,32 @@ class NeighborObs(BaseObservationBuilder):
 
         mask, sign = self.AVAILABLE_NEIGHBORS[name]
 
+        neighs = []
+
         if name == "same_front":
             neigh = self.sim.vehicle.getLeader(self.ego_id)
 
         elif name == "same_back":
             neigh = self.sim.vehicle.getFollower(self.ego_id)
 
-        else:
-            neigh = self.sim.vehicle.getNeighbors(self.ego_id, mask)
-            neigh = neigh[0] if neigh else None
+        elif name == "left_front":
+            neighs = self.sim.vehicle.getLeftLeaders(self.ego_id)
+            neigh = neighs[0] if neighs else None
+
+        elif name == "left_back":
+            neighs = self.sim.vehicle.getLeftFollowers(self.ego_id)
+            neigh = neighs[0] if neighs else None
+                
+        elif name == "right_front":
+            neighs = self.sim.vehicle.getRightLeaders(self.ego_id)
+            neigh = neighs[0] if neighs else None
+
+        elif name == "right_back":
+            neighs = self.sim.vehicle.getRightFollowers(self.ego_id)
+            neigh = neighs[0] if neighs else None
 
         return neigh, sign
-
+    
     # ============================================================
     # FEATURE COMPUTATION
     # ============================================================
@@ -94,43 +111,44 @@ class NeighborObs(BaseObservationBuilder):
     def compute_feature(self, feature, neigh, ego_speed, sign):
 
         if neigh is None:
-            if feature == "distance":
-                return sign
-            if feature == "rel_speed":
-                return -sign
-            if feature == "ttc":
-                return 1
+            return self._best_case_feature(feature, sign)
 
         veh_id, distance = neigh
 
         if veh_id not in self.sim.vehicle.getIDList():
-            if feature == "distance":
-                return sign
-            if feature == "rel_speed":
-                return -sign
-            if feature == "ttc":
-                return 1
+            return self._best_case_feature(feature, sign)
 
         v = self.sim.vehicle.getSpeed(veh_id)
-
         rel_speed = ego_speed - v
 
         if feature == "rel_speed":
             return self.norm_rel_speed(rel_speed)
-        
-
-        ego_pos = self.sim.vehicle.getLanePosition(self.ego_id)
-        veh_pos = self.sim.vehicle.getLanePosition(veh_id)
-        distance = veh_pos - ego_pos
 
         if feature == "distance":
             return self.norm_distance(distance)
 
         if feature == "ttc":
-            ttc = self.compute_ttc(abs(distance), sign*rel_speed)
+            ttc = self.compute_ttc(distance, rel_speed, sign)
             return self.norm_ttc(ttc)
 
         raise ValueError(feature)
+
+    def _best_case_feature(self, feature, sign):
+        # veicolo davanti: distanza massima positiva, 
+        # veicolo dietro: distanza massima negativa
+        if feature == "distance":
+            return sign  
+        
+        # veicolo davanti: rel_speed negativo siccome il veicolo è più veloce del nostro,
+        # veicolo dietro: rel_speed positivo siccome il veicolo è più lento del nostro
+        if feature == "rel_speed":
+            return -sign
+        
+        # veicolo davanti: ttc alto siccome non c'è rischio di collisione, 
+        # veicolo dietro: ttc alto siccome non c'è rischio di collisione
+        if feature == "ttc":
+            return 1
+
 
     # ============================================================
     # OBSERVATION

@@ -106,10 +106,11 @@ class SumoGymEgoEnv(gym.Env):
 
         if terminated or truncated:
             obs = self.last_obs
+            reward = self.reward_function.compute_terminal(self.last_obs, action, obs, info)
         else:
             obs = self.obs_builder.build_obs()
+            reward = self.reward_function.compute(self.last_obs, action, obs, info)
 
-        reward = self.reward_function.compute(self.last_obs, action, obs, info)
 
         info["metrics"] = {}
         info["metrics"]["step"] = self.metrics_tracker.compute_step_metrics(self.last_obs, action, obs, reward, info)

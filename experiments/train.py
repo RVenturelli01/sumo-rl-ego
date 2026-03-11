@@ -12,6 +12,19 @@ def main(cfg: DictConfig):
 
     cfg_train = resolve_training_cfg(cfg)
 
+
+    # -----------------------
+    # PRINT CONFIG
+    # -----------------------
+    print("\n========== TRAINING CONFIG ==========\n")
+    print(OmegaConf.to_yaml(cfg_train, resolve=True))
+    print("=====================================\n")
+
+    answer = input("Start training? [y/N]: ").strip().lower()
+    if answer not in ["y", "yes"]:
+        print("Training aborted.")
+        return
+
     env = sre.make_vec_env(
         cfg_train.env,
         n_envs=cfg_train.resources.n_envs,

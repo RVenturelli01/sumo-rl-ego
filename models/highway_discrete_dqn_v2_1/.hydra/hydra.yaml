@@ -118,7 +118,7 @@ hydra:
     override_dirname: ''
     id: ???
     num: ???
-    config_name: config.yaml
+    config_name: train.yaml
     env_set: {}
     env_copy: []
     config:
@@ -140,7 +140,7 @@ hydra:
     - path: ''
       schema: structured
       provider: schema
-    output_dir: /home/ricca/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs/2026-03-10_17-30-06_train_highway_discrete_v1_DQN
+    output_dir: /home/ricca/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs/2026-03-11_10-17-05_train_highway_discrete_v2_DQN
     choices:
       algo: dqn
       hydra/env: default

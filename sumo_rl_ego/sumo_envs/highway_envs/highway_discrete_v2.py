@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent / "scenarios"
 max_speed = 50.0
 max_distance = 200.0
 max_ttc = 20.0
+check_distance = 10.0
 
 # ego parameters
 acc_value = 2.0
@@ -26,8 +27,8 @@ log_window = 500
 
 
 
-@register_env("highway_discrete_v1")
-class HighwayDiscreteV1(sge.SumoGymEgoEnv):
+@register_env("highway_discrete_v2")
+class HighwayDiscreteV2(sge.SumoGymEgoEnv):
     def __init__(self, use_gui=False, seed=0):
         sumocfg_files = [str(BASE_DIR / "highway_fast_modified/highway.sumocfg")]
 
@@ -42,7 +43,7 @@ class HighwayDiscreteV1(sge.SumoGymEgoEnv):
         obs_builder = sge.CompositeObservation([
             sge.obs.EgoSpeedObs(max_speed=max_speed),
             sge.obs.EgoLaneObs(),
-
+            sge.obs.LaneFreeObs(check_distance=check_distance),
             sge.obs.NeighborObs(
                 neighbors=[
                     "same_front", "same_back",
