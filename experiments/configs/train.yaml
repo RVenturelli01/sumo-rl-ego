@@ -2,10 +2,10 @@ defaults:
   - algo: dqn
   - _self_
 
-env: "highway_discrete_v2"
+env: "highway_e2_o2_rfast"
 
 resources:
-  n_envs: 4
+  n_envs: 8
   device: cpu
 
 

@@ -17,7 +17,6 @@ tensorboard_dqn/DQN*
 
 # RL artifacts
 outputs/
-*.zip
 *.pth
 *.pt
 .env

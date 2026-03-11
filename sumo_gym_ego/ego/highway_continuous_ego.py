@@ -12,7 +12,7 @@ class HighwayContinuousEgo(BaseEgoController):
     def __init__(
         self,
         max_acc=2.0,        # m/s^2
-        max_dec=-4.0,       # m/s^2
+        max_dec=-2.0,       # m/s^2
         lc_duration=0,
         lane_threshold=0.5  # threshold for lane change
     ):
@@ -23,8 +23,8 @@ class HighwayContinuousEgo(BaseEgoController):
 
         # action: [a_long, lane_signal]
         self.action_space = Box(
-            low=np.array([-1, -1.0], dtype=np.float32),
-            high=np.array([1, 1.0], dtype=np.float32),
+            low=np.array([-1.0, -1.0], dtype=np.float32),
+            high=np.array([1.0, 1.0], dtype=np.float32),
         )
 
     def apply_action(self, action):
@@ -34,7 +34,9 @@ class HighwayContinuousEgo(BaseEgoController):
         speed = self.sim.vehicle.getSpeed(self.ego_id)
 
         # -------- NORMALIZED -> PHYSICAL --------
-        accel = np.clip(action[0], -1, 1)*(self.max_acc+self.max_dec)/2 + (self.max_acc-self.max_dec)/2
+        accel_norm = float(np.clip(action[0], -1, 1)) ** 3
+        accel = self.max_dec + (accel_norm + 1) * (self.max_acc - self.max_dec) / 2
+        lane_cmd = np.tanh(action[1])
         new_speed = max(0.0, speed + accel * time_step)
         self.sim.vehicle.setSpeed(self.ego_id, new_speed)
 
