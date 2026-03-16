@@ -5,6 +5,11 @@ import sumo_gym_ego as sge
 
 BASE_DIR = Path(__file__).resolve().parent.parent / "scenarios" 
 
+
+# simulation parameters
+time_step = 0.5
+max_simulation_time = 300
+
 # maximum values for clipping and normalization
 max_speed = 50.0
 max_distance = 200.0
@@ -17,10 +22,11 @@ dec_value = -2.0
 lc_duration = 0.0
 
 # reward weights
+step_penalty = -0.1
 w_arrived = 0.0
-w_crash = -1.0
-w_offroad = -1.0
-weights = [1.0, 10.0]  # weights for the reward components (speed, terminal)
+w_crash = -10.0
+w_offroad = -10.0
+weights = [1.0, 1.0, 1.0]  # weights for the reward components (step_penalty, speed, terminal)
 
 # window size for logging metrics
 log_window = 500  
@@ -35,8 +41,8 @@ class HighwayDiscreteV2(sge.SumoGymEgoEnv):
         config = sge.SumoConfig(
             use_gui=use_gui,
             ego_id="ego",
-            max_simulation_time=300,
-            time_step=0.5,
+            max_simulation_time=max_simulation_time,
+            time_step=time_step,
             seed=seed
         )
 
@@ -58,6 +64,7 @@ class HighwayDiscreteV2(sge.SumoGymEgoEnv):
         ])
 
         reward_function = sge.CompositeReward([
+            sge.reward.StepPenalty(penalty=step_penalty),
             sge.reward.SpeedReward(max_speed=max_speed),
             sge.reward.TerminalReward(
                 w_crash=w_crash,
@@ -75,6 +82,7 @@ class HighwayDiscreteV2(sge.SumoGymEgoEnv):
         metrics_tracker = sge.CompositeMetricsTracker([
             sge.metrics.EgoFeatureMetrics(window=log_window),
             sge.metrics.TerminalEventMetrics(window=log_window),
+            sge.metrics.ActionDistrMetrics(window=log_window),
         ])
 
         super().__init__(

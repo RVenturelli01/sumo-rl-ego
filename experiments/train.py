@@ -2,6 +2,7 @@ import hydra
 from pathlib import Path
 from omegaconf import DictConfig, OmegaConf
 from hydra.core.hydra_config import HydraConfig
+import wandb
 
 import sumo_rl_ego as sre
 
@@ -12,18 +13,16 @@ def main(cfg: DictConfig):
 
     cfg_train = resolve_training_cfg(cfg)
 
-
-    # -----------------------
-    # PRINT CONFIG
-    # -----------------------
-    print("\n========== TRAINING CONFIG ==========\n")
-    print(OmegaConf.to_yaml(cfg_train, resolve=True))
-    print("=====================================\n")
-
-    answer = input("Start training? [y/N]: ").strip().lower()
-    if answer not in ["y", "yes"]:
-        print("Training aborted.")
+    if not confirm_config(cfg_train):
         return
+    
+    # logger
+    run = wandb.init(
+        project=cfg.wandb.project,
+        name=cfg.wandb.run_name,
+        config=OmegaConf.to_container(cfg_train, resolve=True),
+        sync_tensorboard=cfg.wandb.sync_tensorboard,
+    )
 
     env = sre.make_vec_env(
         cfg_train.env,
@@ -60,6 +59,18 @@ def main(cfg: DictConfig):
     print("\nRun: tensorboard --logdir outputs")
 
 
+
+def confirm_config(cfg):
+    print(f"\n========== CONFIG ==========\n")
+    print(OmegaConf.to_yaml(cfg, resolve=True))
+    print("=" * 28 + "\n")
+
+    answer = input("Continue? [y/N]: ").strip().lower()
+    if answer not in ["y", "yes"]:
+        print("Aborted.")
+        return False
+
+    return True
 
 
 def resolve_training_cfg(cfg):

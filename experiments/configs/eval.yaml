@@ -1,10 +1,22 @@
 
-env: "highway_discrete_v2"
+wandb:
+  project: "sre_eval"
+  run_name: Null
 
+
+# 1) select environment and policy
+env: "highway_discrete_v2"
 policy_id: Null
 
+# 2) select model path 
 model_path: Null
+
+episodes: 100
 
 seed: 0
 
-episodes: 100
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null

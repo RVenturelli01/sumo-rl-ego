@@ -43,6 +43,7 @@ def main(cfg: DictConfig):
         print("=" * 20 + "OBSERVATION" + "=" * 20)
         env.obs_builder.print_obs(obs)
         print("=" * 50)
+        
 
         # print("\nScenario: ",env.config.sumocfg_file)
         input("Press Enter to step...\n")

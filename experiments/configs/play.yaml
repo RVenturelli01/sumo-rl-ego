@@ -1,8 +1,15 @@
 
+# 1) select environment and policy
 env: "highway_discrete_v2"
-
 policy_id: Null
 
+# 2) select model path 
 model_path: Null
 
 seed: 0
+
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null

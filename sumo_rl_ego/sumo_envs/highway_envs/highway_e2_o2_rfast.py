@@ -18,10 +18,11 @@ lc_duration = 0.0
 lane_threshold = 0.9
 
 # reward weights
+step_penalty = -0.1
 w_arrived = 0.0
-w_crash = -1.0
-w_offroad = -1.0
-weights = [1.0, 10.0]  # weights for the reward components (speed, terminal)
+w_crash = -10.0
+w_offroad = -10.0
+weights = [1.0, 1.0, 1.0]  # weights for the reward components (step_penalty, speed, terminal)
 
 # window size for logging metrics
 log_window = 500  
@@ -59,6 +60,7 @@ class HighwayDiscreteV2(sge.SumoGymEgoEnv):
         ])
 
         reward_function = sge.CompositeReward([
+            sge.reward.StepPenalty(penalty=step_penalty),
             sge.reward.SpeedReward(max_speed=max_speed),
             sge.reward.TerminalReward(
                 w_crash=w_crash,

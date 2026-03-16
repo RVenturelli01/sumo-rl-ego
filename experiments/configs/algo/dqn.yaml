@@ -4,27 +4,27 @@ model:
   policy: 'MlpPolicy'
   learning_rate: 5.0e-5       # Dimezzata: con alta varianza, un LR più basso evita divergenze
   gamma: 0.95                 # Ridotto per focus su stabilità a breve/medio termine
-  buffer_size: 100000         # Ridotto: in ambienti ad alta varianza, dati troppo vecchi possono inquinare il training
+  buffer_size: 50000         # Ridotto: in ambienti ad alta varianza, dati troppo vecchi possono inquinare il training
   
   learning_starts: 5000       # 10k è prudente, 5k bastano per iniziare a vedere errori
-  batch_size: 512             # Aumentato per stabilizzare il gradiente contro la varianza
+  batch_size: 1000             # Aumentato per stabilizzare il gradiente contro la varianza
   
   train_freq: 4               # Aggiorna ogni 4 step di simulazione (1 volta per ogni env parallelo)
   gradient_steps: 4           # Esegue 4 aggiornamenti ogni train_freq per massimizzare l'uso dei dati
   
   target_update_interval: 5000 # Aumentato: cambia il target meno spesso per dare stabilità
   
-  exploration_fraction: 0.3    # Accelera la fine dell'esplorazione casuale pura
+  exploration_fraction: 0.7    # Accelera la fine dell'esplorazione casuale pura
   exploration_initial_eps: 1.0
   exploration_final_eps: 0.02  # Mantiene un minimo di cautela/esplorazione
   
   policy_kwargs:
-    net_arch: [150, 150]
+    net_arch: [200, 200]
     # Se usi SB3, considera l'attivazione di categorical DQN o QR-DQN se la varianza è estrema
   
   verbose: 1
 
 training:
-  total_timesteps: 500000
+  total_timesteps: 1000000
   log_interval: 500
   reset_num_timesteps: true
