@@ -1,112 +1,142 @@
 import hydra
 from pathlib import Path
 from omegaconf import DictConfig, OmegaConf
+from hydra.utils import to_absolute_path
 from hydra.core.hydra_config import HydraConfig
+from stable_baselines3 import PPO, DQN, A2C, SAC, TD3
 import wandb
 
 import sumo_rl_ego as sre
 
 
-
-@hydra.main(version_base=None, config_path="configs", config_name="train.yaml")
-def main(cfg: DictConfig):
-
-    cfg_train = resolve_training_cfg(cfg)
-
-    if not confirm_config(cfg_train):
-        return
-    
-    # logger
-    run = wandb.init(
-        project=cfg.wandb.project,
-        name=cfg.wandb.run_name,
-        config=OmegaConf.to_container(cfg_train, resolve=True),
-        sync_tensorboard=cfg.wandb.sync_tensorboard,
-    )
-
-    env = sre.make_vec_env(
-        cfg_train.env,
-        n_envs=cfg_train.resources.n_envs,
-        base_seed=cfg_train.seed,
-    )
-
-    if cfg.checkpoint.load_path is None:
-
-        model = sre.build_model(
-            env,
-            cfg_train.algo,
-            seed=cfg_train.seed,
-            device=cfg_train.resources.device
-        )
-
-    else:
-
-        model = sre.load_model(
-            env,
-            cfg_train.algo,
-            load_path=cfg.checkpoint.load_path,
-            seed=cfg_train.seed,
-            device=cfg_train.resources.device
-        )
-
-    model.tensorboard_log = "./tensorboard"
-
-    model = sre.train(model, cfg.algo)
-
-    model.save("model")
-
-    print("\nTraining finished!")
-    print("\nRun: tensorboard --logdir outputs")
+ALGO_REGISTRY = {
+    "PPO": PPO,
+    "DQN": DQN,
+    "A2C": A2C,
+    "SAC": SAC,
+    "TD3": TD3,
+}
 
 
-
-def confirm_config(cfg):
-    print(f"\n========== CONFIG ==========\n")
-    print(OmegaConf.to_yaml(cfg, resolve=True))
-    print("=" * 28 + "\n")
-
-    answer = input("Continue? [y/N]: ").strip().lower()
+def confirm_start():
+    answer = input("\nStart training? [y/N]: ").strip().lower()
     if answer not in ["y", "yes"]:
-        print("Aborted.")
-        return False
-
-    return True
+        print("Training aborted by user.")
+        exit()
 
 
-def resolve_training_cfg(cfg):
-    """
-    Restituisce il config effettivo da usare per il training.
-
-    - se non c'è resume → usa cfg
-    - se c'è resume → carica cfg_old dal run originale
-      e applica SOLO gli override CLI
-    """
-
-    if cfg.checkpoint.load_path is None:
-        return cfg
-
-    cfg_old = sre.load_run(cfg.checkpoint.load_path)
-
-    # copia per evitare side effects
-    cfg_train = OmegaConf.create(OmegaConf.to_container(cfg_old, resolve=False))
-
-    overrides = HydraConfig.get().overrides.task
-
-    for o in overrides:
-        if "=" not in o:
+def apply_overrides(model, overrides):
+    for key, value in overrides.items():
+        if value is None:
             continue
 
-        key, value = o.split("=", 1)
+        if hasattr(model, key):
+            setattr(model, key, value)
+            print(f"{key} -> {value}")
 
-        # skip parametri usati solo per il resume
-        if key.startswith("checkpoint."):
-            continue
+            if key == "learning_rate":
+                model._setup_lr_schedule()
+        else:
+            print(f"Warning: '{key}' not in model")
 
-        value_cfg = OmegaConf.create({"v": value})["v"]
-        OmegaConf.update(cfg_train, key, value_cfg, merge=True)
 
-    return cfg_train
+def train(cfg):
+    print("\n========== TRAINING CONFIG ==========\n")
+    print(OmegaConf.to_yaml(cfg, resolve=True))
+    print("=====================================\n")
+    confirm_start()
 
+    run_dir = Path(HydraConfig.get().runtime.output_dir)
+
+    print("Initializing Weights & Biases...")
+    run = wandb.init(
+        config=OmegaConf.to_container(cfg, resolve=True),
+        **cfg.wandb_kwargs)
+
+
+    print("Creating environment...")
+    env = sre.make_vec_env(
+        cfg.env.id,
+        n_envs=cfg.env.n_envs,
+        base_seed=cfg.seed,
+    )
+
+    print("Initializing algorithm...")
+    algo_cls = ALGO_REGISTRY[cfg.algo.type]
+    model = algo_cls(env=env, **cfg.algo.algo_kwargs)
+
+    print("\nStarting training...\n")
+    model.learn(
+        callback=sre.CustomLogsCallback(),
+        **cfg.learn_kwargs,
+    )
+
+    print("\nTraining finished.")
+
+    model.save(run_dir / "model")
+
+    run.finish()
+
+    print("\nRun completed successfully.\n")
+
+
+def finetune(cfg):
+    old_cfg = OmegaConf.load(to_absolute_path(cfg.cfg_path))
+    cfg = OmegaConf.merge(old_cfg, cfg)
+    cfg.experiment.model_dir = to_absolute_path(cfg.model_dir)
+    cfg.experiment.learn_kwargs.reset_num_timesteps = False
+
+
+    print("\n========== FINE-TUNING CONFIG ==========\n")
+    print(OmegaConf.to_yaml(cfg, resolve=True))
+    print("=====================================\n")
+    confirm_start()
+
+    run_dir = Path(HydraConfig.get().runtime.output_dir)
+
+    print("Initializing Weights & Biases...")
+    run = wandb.init(
+        config=OmegaConf.to_container(cfg, resolve=True),
+        resume="allow",
+        **cfg.wandb_kwargs,
+    )    
+
+    print("Creating environment...")
+    env = sre.make_vec_env(
+        cfg.env.id,
+        n_envs=cfg.env.n_envs,
+        base_seed=cfg.seed,
+    )
+
+    print("Initializing algorithm...")
+    algo_cls = ALGO_REGISTRY[cfg.algo.type]
+    model = algo_cls.load(path=cfg.experiment.model_path, env=env)
+    apply_overrides(model, cfg.override)
+
+    print("\nStarting training...\n")
+    model.learn(
+        callback=sre.CustomLogsCallback(),
+        **cfg.learn_kwargs,
+    )
+
+    print("\nTraining finished.")
+
+    model.save(run_dir / "model")
+
+    run.finish()
+
+    print("\nRun completed successfully.\n")
+
+
+
+
+@hydra.main(version_base=None, config_path="configs/train", config_name="dqn.yaml")
+def main(cfg: DictConfig):
+    
+    if cfg.finetuning:
+        finetune(cfg)
+    else:
+        train(cfg)
 
 
 if __name__ == "__main__":

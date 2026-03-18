@@ -5,10 +5,8 @@ from .policies.factory import load_policy
 from .policies.registry import list_policies
 from . import policies
 
-from .infra.model_factory import build_model, load_model
-from .infra.trainer import train
-
 from .infra.run_loader import load_run
+from .infra.custom_logs_callback import CustomLogsCallback
 
 
 __all__ = [
@@ -22,5 +20,6 @@ __all__ = [
     "load_model",
     "load_run",
     "SB3_policy",
-    "policies"
+    "policies",
+    "CustomLogsCallback",
 ]

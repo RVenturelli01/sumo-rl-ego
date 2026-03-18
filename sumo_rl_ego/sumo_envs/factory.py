@@ -4,7 +4,6 @@ from .registry import ENV_REGISTRY
 
 
 def make_env(env_id: str, seed: int, **kwargs):
-    print("[SRE] Creating environment...")
 
     if env_id not in ENV_REGISTRY:
         raise ValueError(f"Unknown env_id '{env_id}'")
@@ -16,7 +15,6 @@ def make_env(env_id: str, seed: int, **kwargs):
 
 
 def make_vec_env(env_id: str, n_envs: int, base_seed: int = 0, **kwargs):
-    print(f"[SRE] Creating vectorized environment with {n_envs} envs...")
 
     def make_thunk(rank: int):
         def _init():

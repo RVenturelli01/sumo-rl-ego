@@ -1,0 +1,48 @@
+wandb:
+  project: "sre_train"
+  run_name: ${experiment.name}
+  notes: 
+  sync_tensorboard: true
+
+
+experiment:
+  name: "train_${experiment.env_id}_${experiment.algo}"
+  seed: 0
+
+  # ENV
+  env_id: "highway_e2_o2_rfast"
+  n_envs: 8
+
+  # TRAINING
+  learn_kwargs:
+    total_timesteps: 10000
+    log_interval: 500
+    reset_num_timesteps: true
+    progress_bar: true
+
+  # ALGO
+  algo: "PPO"
+  algo_kwargs:
+    learning_rate: 3e-4
+    gamma: 0.99
+    gae_lambda: 0.95
+    n_steps: 1024        
+    batch_size: 256
+    n_epochs: 10
+    ent_coef: 0.01
+    vf_coef: 0.5
+    max_grad_norm: 0.5
+    clip_range: 0.2
+    use_sde: false
+    sde_sample_freq: 4
+    policy_kwargs:
+      net_arch: [256, 256]
+    seed: ${experiment.seed}
+    tensorboard_log: null
+
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: outputs/${now:%Y-%m-%d}_${now:%H-%M-%S}_${experiment.name}

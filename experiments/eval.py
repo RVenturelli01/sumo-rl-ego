@@ -1,7 +1,9 @@
 import hydra
-from omegaconf import DictConfig
+from hydra.utils import instantiate
+from omegaconf import DictConfig, OmegaConf
 from tqdm import tqdm
 import wandb
+from stable_baselines3 import PPO, DQN, A2C, SAC, TD3
 
 import sumo_rl_ego as sre
 
@@ -18,70 +20,140 @@ it plots:
 - histogram of the episode average speeds
 '''
 
+ALGO_REGISTRY = {
+    "PPO": PPO,
+    "DQN": DQN,
+    "A2C": A2C,
+    "SAC": SAC,
+    "TD3": TD3,
+}
+
+
+
+def confirm_start():
+    answer = input("\nStart training? [y/N]: ").strip().lower()
+    if answer not in ["y", "yes"]:
+        print("Training aborted by user.")
+        exit()
+
+
+
+def print_eval_config(cfg):
+
+    print("\n========== EVALUATION CONFIG ==========\n")
+
+    print(f"n_episodes: {cfg.n_episodes}")
+    print(f"seed: {cfg.seed}")
+    print(f"mode: {cfg.mode}")
+
+    if cfg.mode == "model":
+        print(f"model_path: {cfg.model_path}")
+
+    elif cfg.mode == "policy_id":
+        print(f"policy_id: {cfg.policy_id}")
+        print(f"env_id: {cfg.env_id}")
+
+    elif cfg.mode == "policy_class":
+        print(f"policy_class: {cfg.policy_class}")
+        print(f"env_id: {cfg.env_id}")
+
+    print("\nwandb:")
+    print(f"  project: {cfg.wandb.project}")
+    print(f"  run_name: {cfg.wandb.run_name}")
+
+    print("\n=======================================\n")
+
+
+
+def run_episode(env, policy, seed):
+
+    obs, _ = env.reset(seed=seed)
+
+    terminated = truncated = False
+    ep_reward = 0.0
+
+    while not (terminated or truncated):
+        action = policy.predict(obs)
+        obs, reward, terminated, truncated, info = env.step(action)
+        ep_reward += reward
+
+    metrics = info["metrics"]["episode"]
+
+    return ep_reward, metrics["ep_length"], metrics["ep_avg_speed"]
+
+
+
+def load_policy_and_env(cfg):
+    
+    if cfg.mode == "model":
+        cfg_old = sre.load_run(cfg.model_path)
+        exp_old = cfg_old.experiment
+
+        env = sre.make_env(exp_old.env_id, seed=cfg.seed)
+
+        algo_cls = ALGO_REGISTRY[exp_old.algo]
+
+        model = algo_cls.load(cfg.model_path, env=env)
+
+        policy = sre.policies.SB3Policy(model)
+
+    elif cfg.mode == "policy_id":
+        env = sre.make_env(cfg.env_id, seed=cfg.seed)
+        policy = sre.load_policy(cfg.policy_id)
+
+    elif cfg.mode == "policy_class":
+        env = sre.make_env(cfg.env_id, seed=cfg.seed)
+        policy = instantiate(cfg.policy_class, env=env)
+        
+    else:
+        raise ValueError("Invalid mode. Must be one of 'model', 'policy_id', or 'policy_class'.")
+
+    return policy, env
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="eval.yaml")
 def main(cfg: DictConfig):
 
-    wandb.init(
+    print_eval_config(cfg)
+    confirm_start()
+    
+    print("Initializing Weights & Biases...")
+    run = wandb.init(
         project=cfg.wandb.project,
         name=cfg.wandb.run_name,
-        config=dict(cfg)
+        notes=cfg.wandb.notes,
+        config=OmegaConf.to_container(cfg, resolve=True),
+        sync_tensorboard=cfg.wandb.sync_tensorboard,
+        dir="/tmp"
     )
 
-    if cfg.model_path is not None:
-        cfg_old = sre.load_run(cfg.model_path)
-        env = sre.make_env(cfg_old.env, seed=cfg.seed)
-        model = sre.load_model(
-            env=env,
-            cfg=cfg_old.algo,
-            seed=cfg.seed,
-            load_path=cfg.model_path
-        )
-        policy = sre.policies.SB3Policy(model)
+    print("Loading policy...")
 
-    elif cfg.policy_id is not None:
-        env = sre.make_env(cfg.env, seed=cfg.seed)
-        policy = sre.load_policy(cfg.policy_id)
+    policy, env = load_policy_and_env(cfg)
 
-    else:
-        raise ValueError("Either model_path or policy_id must be provided.")
+    print("Evaluating policy...")
 
-
-    pbar = tqdm(total=cfg.episodes, desc="Episodes")
+    pbar = tqdm(total=cfg.n_episodes, desc="Episodes")
 
     history_reward = []
     history_length = []
     history_avg_speed = []
 
-    for ep in range(cfg.episodes):
+    for ep in range(cfg.n_episodes):
 
-        seed=cfg.seed + ep
-        obs, _ = env.reset(seed)
+        seed = cfg.seed + ep
 
-        terminated = False
-        truncated = False
-        ep_reward = 0.0
-
-        while not (terminated or truncated):
-            action = policy.predict(obs)
-            obs, reward, terminated, truncated, info = env.step(action)
-            ep_reward += reward
-
-        ep_length = info["metrics"]["episode"]["ep_length"]
-        ep_avg_speed = info["metrics"]["episode"]["ep_avg_speed"]
+        ep_reward, ep_length, ep_avg_speed = run_episode(env, policy, seed)
 
         history_reward.append(ep_reward)
         history_length.append(ep_length)
         history_avg_speed.append(ep_avg_speed)
 
-        wandb.log(
-            {
+        wandb.log({
                 "episode_reward": ep_reward,
                 "episode_length": ep_length,
                 "episode_avg_speed": ep_avg_speed,
-            },
-            step=seed,
+            },step=seed,
         )
 
         pbar.update(1)
@@ -94,9 +166,7 @@ def main(cfg: DictConfig):
     print_log(log)
 
 
-    # histogram of the returns on wandb
-    wandb.log(
-        {
+    wandb.log({
             "returns_histogram": build_histogram_plot(
                 history_reward,
                 column="episode_reward",
@@ -111,14 +181,10 @@ def main(cfg: DictConfig):
                 history_avg_speed,
                 column="episode_avg_speed",
                 title="Episode Average Speed Histogram",
-            ),
-        }
+            ),}
     )
 
-
     wandb.finish()
-
-
 
 
 
@@ -132,7 +198,6 @@ def build_histogram_plot(values, column, title):
         value=column,
         title=title,
     )
-
 
 
 

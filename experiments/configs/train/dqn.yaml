@@ -1,0 +1,63 @@
+wandb_kwargs:
+  project: "sre_train"
+  name: ${name}
+  dir: ${hydra:runtime.output_dir}/wandb
+  sync_tensorboard: true
+  notes: 
+
+
+# EXPERIMENT
+name: "train_${env.id}_${algo.type}"
+seed: 0
+finetuning: false
+
+# ENV
+env:
+  id: "highway_e1_o2_rfast"
+  n_envs: 4
+
+
+# TRAINING
+learn_kwargs:
+  total_timesteps: 1e6  # 500000
+  log_interval: 1000
+  reset_num_timesteps: false 
+  progress_bar: true
+    
+
+# ALGO
+algo: 
+  type: "DQN"
+  algo_kwargs:
+    policy: MlpPolicy
+    learning_rate: 3e-4  # 1e-4
+    buffer_size: 500000  # 1000000
+    learning_starts: 10000  # 100
+    batch_size: 128  # 32
+    tau: 1.0  # 1.0
+    gamma: 0.99  # 0.99
+    train_freq: 4  # 4
+    gradient_steps: 8  # 1
+    replay_buffer_class: null
+    replay_buffer_kwargs: null
+    optimize_memory_usage: false
+    n_steps: 1
+    target_update_interval: 2000 
+    exploration_fraction: 0.1  # 0.1
+    exploration_initial_eps: 1.0  # 1.0
+    exploration_final_eps: 0.02  # 0.05
+    max_grad_norm: 10  # 10
+    stats_window_size: 100  # 100
+    policy_kwargs: 
+      net_arch: [256, 256]  # None
+    verbose: 1
+    seed: ${seed}
+    device: cpu
+    tensorboard_log: null
+
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: ${hydra:runtime.cwd}/outputs/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}

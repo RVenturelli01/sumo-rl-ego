@@ -1,12 +1,16 @@
-
-# 1) select environment and policy
-env: "highway_discrete_v2"
-policy_id: Null
-
-# 2) select model path 
-model_path: Null
-
 seed: 0
+
+mode: model   # model | policy_id | policy_class
+
+model_path: null  # (if mode=model)
+
+policy_id: null  # (if mode=policy_id)
+
+policy_class:  
+  _target_: sre.policies.MyPolicy    # (if mode=policy_class)
+
+
+env_id: "highway_e1_o2_rfast"  # (if  mode=policy_id or  mode=policy_class)
 
 
 hydra:

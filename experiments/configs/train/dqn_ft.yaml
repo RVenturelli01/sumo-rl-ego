@@ -1,0 +1,39 @@
+wandb_kwargs:
+  project: "sre_train"
+  name: ${name}
+  dir: ${hydra:runtime.output_dir}/wandb
+  sync_tensorboard: true
+  notes: 
+
+
+# EXPERIMENT
+name: "finetune_${env.id}_${algo.type}"
+seed: 0
+finetuning: true
+
+
+path:
+  model_dir:   # add the model dir path here
+  model_path: ${path.model_dir}/model.zip
+  cfg_path: ${path.model_dir}/.hydra/config.yaml
+  tensorboard_log: ${path.model_dir}/tensorboard
+
+
+# TRAINING
+learn_kwargs:
+  total_timesteps: 100000  # 500000
+  log_interval: 500
+  reset_num_timesteps: false 
+  progress_bar: true
+
+
+# ALGO
+algo: 
+  algo_kwargs: # add the overrides wrt the previous ones
+
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: ${hydra:runtime.cwd}/outputs/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}

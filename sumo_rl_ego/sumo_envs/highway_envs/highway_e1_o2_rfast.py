@@ -22,7 +22,7 @@ dec_value = -2.0
 lc_duration = 0.0
 
 # reward weights
-step_penalty = -0.1
+step_penalty = -0.2
 w_arrived = 0.0
 w_crash = -10.0
 w_offroad = -10.0

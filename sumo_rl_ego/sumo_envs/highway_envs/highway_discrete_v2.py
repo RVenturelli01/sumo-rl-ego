@@ -75,6 +75,7 @@ class HighwayDiscreteV2(sge.SumoGymEgoEnv):
         metrics_tracker = sge.CompositeMetricsTracker([
             sge.metrics.EgoFeatureMetrics(window=log_window),
             sge.metrics.TerminalEventMetrics(window=log_window),
+            sge.metrics.ActionDistrMetrics(window=log_window),
         ])
 
         super().__init__(
