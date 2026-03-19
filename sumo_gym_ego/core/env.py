@@ -43,6 +43,7 @@ class SumoGymEgoEnv(gym.Env):
         self.action_space = self.ego_controller.action_space
         self.observation_space = self.obs_builder.observation_space
 
+        self.rng = random.Random(self.config.seed)
         self.step_count = 0
         self.last_obs = None
 
@@ -51,7 +52,7 @@ class SumoGymEgoEnv(gym.Env):
         super().reset(seed=seed, options=options)
 
         # different seed at each reset for more varied episodes
-        self.config.seed += 1
+        self.config.seed = self.rng.randint(0, 2**32 - 1)
         self.config.sumocfg_file = random.choice(self.sumocfg_files)
 
         self.sim.reset()

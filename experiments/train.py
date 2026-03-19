@@ -4,6 +4,7 @@ from omegaconf import DictConfig, OmegaConf
 from hydra.utils import to_absolute_path
 from hydra.core.hydra_config import HydraConfig
 from stable_baselines3 import PPO, DQN, A2C, SAC, TD3
+from wandb.integration.sb3 import WandbCallback
 import wandb
 
 import sumo_rl_ego as sre
@@ -46,7 +47,6 @@ def train(cfg):
     print("=====================================\n")
     confirm_start()
 
-    run_dir = Path(HydraConfig.get().runtime.output_dir)
 
     print("Initializing Weights & Biases...")
     run = wandb.init(
@@ -59,25 +59,31 @@ def train(cfg):
         cfg.env.id,
         n_envs=cfg.env.n_envs,
         base_seed=cfg.seed,
+        **cfg.env.env_args,
     )
 
     print("Initializing algorithm...")
     algo_cls = ALGO_REGISTRY[cfg.algo.type]
     model = algo_cls(env=env, **cfg.algo.algo_kwargs)
 
-    print("\nStarting training...\n")
+    print("Starting training...\n")
     model.learn(
         callback=sre.CustomLogsCallback(),
         **cfg.learn_kwargs,
     )
 
-    print("\nTraining finished.")
+    print("Training finished.")
 
-    model.save(run_dir / "model")
+    run_dir = Path(HydraConfig.get().runtime.output_dir)
+    model_path = run_dir / "model.zip"
+    artifact = wandb.Artifact("model", type="model")
+    artifact.add_file(str(model_path))
+    wandb.log_artifact(artifact)
 
     run.finish()
 
-    print("\nRun completed successfully.\n")
+    print("Run completed successfully.\n")
+
 
 
 def finetune(cfg):
@@ -113,19 +119,23 @@ def finetune(cfg):
     model = algo_cls.load(path=cfg.experiment.model_path, env=env)
     apply_overrides(model, cfg.override)
 
-    print("\nStarting training...\n")
+    print("Starting training...\n")
     model.learn(
         callback=sre.CustomLogsCallback(),
         **cfg.learn_kwargs,
     )
 
-    print("\nTraining finished.")
+    print("Training finished.")
 
-    model.save(run_dir / "model")
+    model_path = run_dir / "model.zip"
+    model.save(model_path)
+    artifact = wandb.Artifact("model", type="model")
+    artifact.add_file(str(model_path))
+    wandb.log_artifact(artifact)
 
     run.finish()
 
-    print("\nRun completed successfully.\n")
+    print("Run completed successfully.")
 
 
 

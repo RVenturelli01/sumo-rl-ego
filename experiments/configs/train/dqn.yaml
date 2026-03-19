@@ -1,26 +1,32 @@
 wandb_kwargs:
-  project: "sre_train"
+  project: "sre-train"
+  group: ${env.id}
   name: ${name}
-  dir: ${hydra:runtime.output_dir}/wandb
   sync_tensorboard: true
+  dir: ${hydra:runtime.output_dir}/wandb
   notes: 
 
 
 # EXPERIMENT
-name: "train_${env.id}_${algo.type}"
+name: "dqn_v0"
 seed: 0
 finetuning: false
 
+
+
 # ENV
 env:
-  id: "highway_e1_o2_rfast"
-  n_envs: 4
+  id: "HighwayEgo-v0"
+  n_envs: 16
+  env_args:
+    reward: "fast"
+    ego: "discrete"
 
 
 # TRAINING
 learn_kwargs:
-  total_timesteps: 1e6  # 500000
-  log_interval: 1000
+  total_timesteps: 10000  # 500000
+  log_interval: 100
   reset_num_timesteps: false 
   progress_bar: true
     
@@ -53,7 +59,8 @@ algo:
     verbose: 1
     seed: ${seed}
     device: cpu
-    tensorboard_log: null
+    tensorboard_log: ${hydra:runtime.output_dir}/tensorboard
+
 
 
 hydra:
