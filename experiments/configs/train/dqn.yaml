@@ -25,7 +25,7 @@ env:
 
 # TRAINING
 learn_kwargs:
-  total_timesteps: 10000  # 500000
+  total_timesteps: 1e6  # 500000
   log_interval: 100
   reset_num_timesteps: false 
   progress_bar: true

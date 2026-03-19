@@ -76,6 +76,7 @@ def train(cfg):
 
     run_dir = Path(HydraConfig.get().runtime.output_dir)
     model_path = run_dir / "model.zip"
+    model.save(model_path)
     artifact = wandb.Artifact("model", type="model")
     artifact.add_file(str(model_path))
     wandb.log_artifact(artifact)
