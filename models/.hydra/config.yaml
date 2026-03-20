@@ -1,0 +1,51 @@
+wandb_kwargs:
+  project: sre-train
+  group: ${env.id}
+  name: ${name}
+  sync_tensorboard: true
+  dir: ${hydra:runtime.output_dir}/wandb
+  notes: null
+name: dqn_v0
+seed: 0
+finetuning: false
+env:
+  id: HighwayEgo-v0
+  n_envs: 16
+  env_args:
+    reward: fast
+    ego: discrete
+learn_kwargs:
+  total_timesteps: 1000000.0
+  log_interval: 100
+  reset_num_timesteps: false
+  progress_bar: true
+algo:
+  type: DQN
+  algo_kwargs:
+    policy: MlpPolicy
+    learning_rate: 0.0003
+    buffer_size: 500000
+    learning_starts: 10000
+    batch_size: 128
+    tau: 1.0
+    gamma: 0.99
+    train_freq: 4
+    gradient_steps: 8
+    replay_buffer_class: null
+    replay_buffer_kwargs: null
+    optimize_memory_usage: false
+    n_steps: 1
+    target_update_interval: 2000
+    exploration_fraction: 0.1
+    exploration_initial_eps: 1.0
+    exploration_final_eps: 0.02
+    max_grad_norm: 10
+    stats_window_size: 100
+    policy_kwargs:
+      net_arch:
+      - 256
+      - 256
+    verbose: 1
+    seed: ${seed}
+    device: cpu
+    tensorboard_log: ${hydra:runtime.output_dir}/tensorboard

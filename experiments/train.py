@@ -1,6 +1,6 @@
 import hydra
 from pathlib import Path
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf, open_dict
 from hydra.utils import to_absolute_path
 from hydra.core.hydra_config import HydraConfig
 from stable_baselines3 import PPO, DQN, A2C, SAC, TD3
@@ -88,11 +88,10 @@ def train(cfg):
 
 
 def finetune(cfg):
-    old_cfg = OmegaConf.load(to_absolute_path(cfg.cfg_path))
-    cfg = OmegaConf.merge(old_cfg, cfg)
-    cfg.experiment.model_dir = to_absolute_path(cfg.model_dir)
-    cfg.experiment.learn_kwargs.reset_num_timesteps = False
-
+    old_cfg = OmegaConf.load(to_absolute_path(cfg.path.cfg_path))
+    with open_dict(cfg):
+        cfg.env = old_cfg.env
+        cfg.algo.type = old_cfg.algo.type
 
     print("\n========== FINE-TUNING CONFIG ==========\n")
     print(OmegaConf.to_yaml(cfg, resolve=True))
@@ -113,12 +112,13 @@ def finetune(cfg):
         cfg.env.id,
         n_envs=cfg.env.n_envs,
         base_seed=cfg.seed,
+        **cfg.env.env_args,
     )
 
     print("Initializing algorithm...")
     algo_cls = ALGO_REGISTRY[cfg.algo.type]
-    model = algo_cls.load(path=cfg.experiment.model_path, env=env)
-    apply_overrides(model, cfg.override)
+    model = algo_cls.load(path=cfg.path.model_path, env=env)
+    apply_overrides(model, cfg.algo.algo_kwargs)
 
     print("Starting training...\n")
     model.learn(
@@ -133,6 +133,8 @@ def finetune(cfg):
     artifact = wandb.Artifact("model", type="model")
     artifact.add_file(str(model_path))
     wandb.log_artifact(artifact)
+    buffer_path = run_dir / "replay_buffer.pkl"
+    model.save_replay_buffer(buffer_path)
 
     run.finish()
 

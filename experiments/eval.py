@@ -87,22 +87,21 @@ def load_policy_and_env(cfg):
     
     if cfg.mode == "model":
         cfg_old = sre.load_run(cfg.model_path)
-        exp_old = cfg_old.experiment
 
-        env = sre.make_env(exp_old.env_id, seed=cfg.seed)
+        env = sre.make_env(cfg_old.env.id, seed=cfg.seed)
 
-        algo_cls = ALGO_REGISTRY[exp_old.algo]
+        algo_cls = ALGO_REGISTRY[cfg_old.algo.type]
 
         model = algo_cls.load(cfg.model_path, env=env)
 
         policy = sre.policies.SB3Policy(model)
 
     elif cfg.mode == "policy_id":
-        env = sre.make_env(cfg.env_id, seed=cfg.seed)
+        env = sre.make_env(cfg_old.env.id, seed=cfg.seed)
         policy = sre.load_policy(cfg.policy_id)
 
     elif cfg.mode == "policy_class":
-        env = sre.make_env(cfg.env_id, seed=cfg.seed)
+        env = sre.make_env(cfg_old.env.id, seed=cfg.seed)
         policy = instantiate(cfg.policy_class, env=env)
         
     else:

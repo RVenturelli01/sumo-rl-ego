@@ -1,19 +1,20 @@
 wandb_kwargs:
-  project: "sre_train"
+  project: "sre-train"
+  group: ${env.id}
   name: ${name}
-  dir: ${hydra:runtime.output_dir}/wandb
   sync_tensorboard: true
+  dir: ${hydra:runtime.output_dir}/wandb
   notes: 
 
 
 # EXPERIMENT
-name: "finetune_${env.id}_${algo.type}"
+name: "dqn_v0.1"
 seed: 0
 finetuning: true
 
 
 path:
-  model_dir:   # add the model dir path here
+  model_dir: /work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs/2026-03-20_15-24-38_dqn_v0  # add the model dir path here
   model_path: ${path.model_dir}/model.zip
   cfg_path: ${path.model_dir}/.hydra/config.yaml
   tensorboard_log: ${path.model_dir}/tensorboard
@@ -21,7 +22,7 @@ path:
 
 # TRAINING
 learn_kwargs:
-  total_timesteps: 100000  # 500000
+  total_timesteps: 1e6  # 500000
   log_interval: 500
   reset_num_timesteps: false 
   progress_bar: true
@@ -30,6 +31,10 @@ learn_kwargs:
 # ALGO
 algo: 
   algo_kwargs: # add the overrides wrt the previous ones
+    learning_starts: 0
+    exploration_fraction: 0.1  # 0.1  voglio che scenda lento
+    exploration_initial_eps: 0.05
+    exploration_final_eps: 0.005
 
 
 hydra:
