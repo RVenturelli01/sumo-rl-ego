@@ -1,2 +1,2 @@
 
-taskset -c 19 python -m experiments.train
+taskset -c 4-8 python experiments/train.py

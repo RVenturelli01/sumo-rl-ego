@@ -6,9 +6,8 @@ from omegaconf import DictConfig, OmegaConf
 from stable_baselines3 import A2C, DQN, PPO, SAC, TD3
 
 
-from .config_utils import (
+from sumo_rl_ego.utils import (
     init_wandb, 
-    print_cfg, 
     confirm_cfg,
     save_outputs,
     WandbCustomCallback,
@@ -23,8 +22,8 @@ ALGO_REGISTRY = {
 }
     
     
-def print_cfg(cfg, title):
-    print(f"\n========== {title} CONFIG ==========\n")
+def print_train_cfg(cfg):
+    print(f"\n========== TRAIN CONFIG ==========\n")
     print(OmegaConf.to_yaml(cfg, resolve=True))
     print("================== Summary ==================\n")
     print(f"Environment: {cfg.env.id} (x{cfg.env.n_envs} envs)")
@@ -39,7 +38,7 @@ def print_cfg(cfg, title):
 def main(cfg: DictConfig) -> None:
     _ = HydraConfig.get().runtime.output_dir
 
-    print_cfg(cfg, "TRAIN")
+    print_train_cfg(cfg)
     confirm_cfg()
     
     run = init_wandb(cfg)
@@ -50,7 +49,7 @@ def main(cfg: DictConfig) -> None:
         env = sre.make_vec_env(
             cfg.env.id, 
             n_envs=cfg.env.n_envs, 
-            base_seed=cfg.seed, 
+            base_seed=cfg.run.seed, 
             **cfg.env.kwargs
         )
 
@@ -63,7 +62,7 @@ def main(cfg: DictConfig) -> None:
 
         print("Starting training...\n")
         model.learn(
-            callback=WandbCustomCallback(window_size=1000),
+            callback=WandbCustomCallback(window_size=cfg.learn.rolling_window),
             **cfg.learn.kwargs,
         )
 

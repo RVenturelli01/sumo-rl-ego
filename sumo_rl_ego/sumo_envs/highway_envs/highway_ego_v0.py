@@ -3,6 +3,31 @@ from sumo_rl_ego.sumo_envs.registry import register_env
 import sumo_gym_ego as sge
 from typing import Literal
 
+'''
+Scenario description:
+
+the environment simulates a highway scenario in sumo, the highway has three lanes and has a lot of traffic
+the ego vehicle must reach the end of the highway without crashing, going offroad, or timing out.
+
+the ego at each iteration obtains an observation that includes:
+- its own speed and lane
+- the distance to the nearest vehicle in front and behind in the same lane
+- the distance to the nearest vehicle in front and behind in the left lane (if it exists)
+- the distance to the nearest vehicle in front and behind in the right lane (if it exists)
+
+the ego can either have:
+- discrete action space (acc, dec, lane change left, lane change right, no-op) 
+- continuous action space (acceleration and lane change commands).
+
+the reward function can be configured to prioritize different aspects of the task
+- speed
+- safety
+- comfort 
+
+'''
+
+
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent / "scenarios" 
 

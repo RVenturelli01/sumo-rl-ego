@@ -1,6 +1,7 @@
 from pathlib import Path
 
-import numpy as np
+import hydra
+
 import sumo_rl_ego as sre
 import wandb
 
@@ -23,43 +24,6 @@ def resolve_paths(cfg):
         cfg.source.model_path = str(Path(get_original_cwd()) / cfg.source.model_path)
 
 
-def print_eval_cfg(cfg, title):
-    print(f"\n========== {title} CONFIG ==========\n")
-    print(OmegaConf.to_yaml(cfg, resolve=True))
-    print("================== Summary ==================\n")
-    print(f"Environment: {cfg.env.id}")
-    print(f"Environment arguments: {cfg.env.kwargs}")
-
-    def is_active(k):
-        v = cfg.source.get(k)
-        return v is not None and (k != "policy_class" or v.get("__target__") is not None)
-
-    fields = ["model_id", "model_path", "policy_id", "policy_class"]
-    active = [k for k in fields if is_active(k)]
-
-    print(f"{active[0]}: {cfg.source[active[0]]}") 
-    print(f"Number of episodes: {cfg.n_episodes}")
-    print("\n=============================================\n")
-
-    
-
-def print_play_cfg(cfg, title):
-    print(f"\n========== {title} CONFIG ==========\n")
-    print(OmegaConf.to_yaml(cfg, resolve=True))
-    print("================== Summary ==================\n")
-    print(f"Environment: {cfg.env.id}")
-    print(f"Environment arguments: {cfg.env.kwargs}")
-
-    def is_active(k):
-        v = cfg.source.get(k)
-        return v is not None and (k != "policy_class" or v.get("__target__") is not None)
-
-    fields = ["model_id", "model_path", "policy_id", "policy_class"]
-    active = [k for k in fields if is_active(k)]
-
-    print(f"{active[0]}: {cfg.source[active[0]]}") 
-    print(f"manual: {cfg.manual}")
-    print("\n=============================================\n")
 
     
 def confirm_cfg():
@@ -102,30 +66,33 @@ def load_cfg_from_model_path(model_path):
 
 
 
-def save_outputs(cfg: DictConfig, model) -> None:
+def save_outputs(cfg, model) -> None:
+    # === Resolve output directory (Hydra run dir) ===
+    output_dir = Path(hydra.core.hydra_config.HydraConfig.get().runtime.output_dir)
+
     # === CONFIG ===
-    config_path = Path(cfg.save.config_dir) / "config.yaml"
-    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path = output_dir / "config.yaml"
     OmegaConf.save(cfg, config_path, resolve=True)
     print(f"Saved config to {config_path}")
 
-    if wandb.run is not None:
-        wandb.save(str(model_path))
-
     # === MODEL ===
-    model_path = Path(cfg.save.model_dir) / "model.zip"
-    model_path.parent.mkdir(parents=True, exist_ok=True)
+    model_path = output_dir / "model.zip"
     model.save(model_path)
     print(f"Saved model to {model_path}")
 
-    # === REPLAY BUFFER ===
-    if hasattr(model, "save_replay_buffer") and cfg.save.replay_buffer_dir is not None:
-        replay_buffer_path = Path(cfg.save.replay_buffer_dir) / "replay_buffer.pkl"
-        replay_buffer_path.parent.mkdir(parents=True, exist_ok=True)
-        model.save_replay_buffer(replay_buffer_path)
-        print(f"Saved replay buffer to {replay_buffer_path}")
+    # === WANDB ===
+    if cfg.wandb.enabled and wandb.run is not None:
+        wandb.save(str(model_path))
+
+   # === REPLAY BUFFER ===
+    if hasattr(model, "save_replay_buffer"):
+        output_dir = Path(hydra.core.hydra_config.HydraConfig.get().runtime.output_dir)
+        path = output_dir / "replay_buffer.pkl"
+
+        model.save_replay_buffer(path)
+        print(f"Saved replay buffer to {path}")
     else:
-        print("Warning: replay buffer saving is not supported for this algorithm")
+        print("Replay buffer not supported")
 
         
 

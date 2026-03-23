@@ -6,11 +6,10 @@ from omegaconf import DictConfig, OmegaConf
 from stable_baselines3 import A2C, DQN, PPO, SAC, TD3
 
 
-from .config_utils import (
+from sumo_rl_ego.utils import (
     init_wandb, 
-    print_config, 
-    confirm_config,
-    load_saved_run_config,
+    confirm_cfg,
+    load_cfg_from_model_path,
     save_outputs,
     WandbCustomCallback,
 )
@@ -27,7 +26,7 @@ ALGO_REGISTRY = {
 
 
 def build_finetune_cfg(cfg: DictConfig) -> DictConfig:
-    source_cfg = load_saved_run_config(cfg.source.model_path)
+    source_cfg = load_cfg_from_model_path(cfg.source.model_path)
     final_cfg = OmegaConf.create(OmegaConf.to_container(cfg, resolve=False))
     final_cfg.env = source_cfg.env
     final_cfg.model.algo = source_cfg.model.algo

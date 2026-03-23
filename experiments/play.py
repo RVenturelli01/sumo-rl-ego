@@ -1,19 +1,38 @@
 import hydra
 import sumo_rl_ego as sre
 
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
-from .config_utils import (
-    print_play_cfg,
+from sumo_rl_ego.utils import (
     confirm_cfg,
     check_source_cfg,
     load_policy_from_cfg,
+    resolve_paths,
 )
+
+
+def print_play_cfg(cfg, title):
+    print(f"\n========== PLAYCONFIG ==========\n")
+    print(OmegaConf.to_yaml(cfg, resolve=True))
+    print("================== Summary ==================\n")
+    print(f"Environment: {cfg.env.id}")
+    print(f"Environment arguments: {cfg.env.kwargs}")
+
+    # Print all non-null source fields
+    for key, value in cfg.source.items():
+        if value is not None:
+            if key == "policy_class" and value.get("__target__") is None:
+                continue
+            print(f"{key}: {value}")
+
+    print(f"manual: {cfg.run.manual}")
+    print("\n=============================================\n")
 
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="play.yaml")
 def main(cfg: DictConfig):
+    resolve_paths(cfg)
     check_source_cfg(cfg)
 
     print_play_cfg(cfg, "PLAY")
@@ -22,8 +41,9 @@ def main(cfg: DictConfig):
     print("Loading environment...")
     env = sre.make_env(
         cfg.env.id, 
-        seed=cfg.seed, 
-        **cfg.env.kwargs
+        seed=cfg.run.seed, 
+        **cfg.env.kwargs,
+        use_gui=True,
     )
 
     print("Loading policy...")
@@ -33,8 +53,7 @@ def main(cfg: DictConfig):
     sre.play_policy(
         env,
         policy,
-        seed=cfg.seed,
-        manual=cfg.manual,
+        manual=cfg.run.manual,
     )
 
     env.close()

@@ -1,10 +1,9 @@
-
-name: "play"
-manual: true
-seed: 0
-output_dir: ${hydra:runtime.output_dir}
-auto_env_setup: true
-
+run: 
+  name: "play"
+  seed: 0
+  manual: true
+  output_dir: ${hydra:runtime.output_dir}
+  
 
 # only one between: model_id | model_path | policy_id | policy_class 
 source:  

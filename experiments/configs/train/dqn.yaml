@@ -1,22 +1,22 @@
-
-name: "dqn_v1"
-seed: 0
-output_dir: ${hydra:runtime.output_dir}
+run:
+  name: "dqn_v1"
+  seed: 0
+  output_dir: ${oc.env:HOME}/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs
 
 
 wandb:
   enabled: true
   kwargs:
     project: "sre-train"
-    group: ${env.id}
-    name: ${name}
+    group: ${env.id}_${env.kwargs.ego}_${env.kwargs.reward}
+    name: ${run.name}
     mode: "online"
-    dir: ${output_dir}/wandb
+    dir: ${run.output_dir}/wandb
     notes: null
 
 env:
   id: "HighwayEgo-v0"
-  n_envs: 16
+  n_envs: 8
   kwargs:
     reward: "fast"
     ego: "discrete"
@@ -25,47 +25,45 @@ model:
   algo: "DQN"
   kwargs:
     policy: "MlpPolicy"
-    learning_rate: 5e-4
-    buffer_size: 500000
+    learning_rate: 3e-4
+    buffer_size: 1000000
     learning_starts: 10000
-    batch_size: 128
-    tau: 1.0
-    gamma: 0.99
+    batch_size: 256
+    tau: 0.5
+    gamma: 0.995
     train_freq: 4
-    gradient_steps: 8
+    gradient_steps: 1
     replay_buffer_class: null
     replay_buffer_kwargs: null
     optimize_memory_usage: false
     n_steps: 1
-    target_update_interval: 2000
-    exploration_fraction: 0.1
+    target_update_interval: 1000
+    exploration_fraction: 0.2
     exploration_initial_eps: 1.0
-    exploration_final_eps: 0.05
+    exploration_final_eps: 0.02
     max_grad_norm: 10
     stats_window_size: 100
     policy_kwargs:
       net_arch: [256, 256]
     verbose: 1
-    seed: ${seed}
+    seed: ${run.seed}
     device: "cpu"
-    tensorboard_log: ${output_dir}/tensorboard
+    tensorboard_log: null  # tensorboard
   overrides: {}
 
 learn:
+  rolling_window: 1000
   kwargs:
     total_timesteps: 2e6
     log_interval: 100
     reset_num_timesteps: false
     progress_bar: true
 
-save:
-  config_dir: ${output_dir}
-  model_dir: ${output_dir}
-  replay_buffer_dir: ${output_dir}
 
 hydra:
   job:
     chdir: true
   run:
-    dir: ${output_dir}/outputs/train/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}
+    dir: ${run.output_dir}/train/${now:%Y-%m-%d}_${now:%H-%M-%S}_${run.name}
+
 

@@ -1,31 +1,21 @@
-from __future__ import annotations
+import traci
+import time
 
-from collections import Counter
-from dataclasses import dataclass
-from statistics import mean, pstdev
-from typing import Any
-
-from ..policies.factory import policy_from_model
-from .episode_runner import _start_episode, run_episode
-
-
-def play_policy(env, policy, seed=0, manual=False, max_episodes=1):
-    if max_episodes is not None and max_episodes <= 0:
-        raise ValueError("max_episodes must be positive or None")
-
-    policy = policy_from_model(policy)
-    results = []
+def play_policy(env, policy, manual=False, max_episodes=None):
+    
     episode_idx = 0
 
-    while max_episodes is None or episode_idx < max_episodes:
-        episode_seed = None if seed is None else seed + episode_idx
-        policy, obs = _start_episode(env, policy, seed=episode_seed)
+    while max_episodes is None or episode_idx < max_episodes: 
+
+        obs, _ = env.reset()
+        policy.reset()  
+
+        traci.gui.setSchema("View #0", "real world")
+        traci.gui.trackVehicle("View #0", "ego")
+        traci.gui.setZoom("View #0", 1700)     
 
         terminated = False
         truncated = False
-        total_reward = 0.0
-        steps = 0
-        info = {}
 
         while not (terminated or truncated):
             action = policy.predict(obs)
@@ -45,16 +35,10 @@ def play_policy(env, policy, seed=0, manual=False, max_episodes=1):
 
                 print("=" * 50)
                 input("Press Enter to step...\n")
+            else:
+                time.sleep(0.1) 
 
             obs, reward, terminated, truncated, info = env.step(action)
-            total_reward += reward
-            steps += 1
-
-        episode_log = dict(info.get("log", {}))
-        episode_log.setdefault("episode/return", total_reward)
-        info["log"] = episode_log
-        info.setdefault("step", steps)
-        results.append(info)
 
         print("Episode finished:", info.get("event"))
 
@@ -63,4 +47,3 @@ def play_policy(env, policy, seed=0, manual=False, max_episodes=1):
 
         episode_idx += 1
 
-    return results

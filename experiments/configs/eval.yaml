@@ -1,18 +1,8 @@
-
-name: "eval"
-n_episodes: 100
-seed: 0
-output_dir: ${hydra:runtime.output_dir}
-
-wandb:
-  enabled: false
-  kwargs:
-    project: "sre-eval"
-    group: ${env.id}
-    name: ${name}
-    mode: "online"
-    dir: ${output_dir}/wandb
-    notes: null
+run:
+  name: "eval"
+  n_episodes: 100
+  seed: 0
+  output_dir: ${oc.env:HOME}/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs
 
 
 # only one between: model_id | model_path | policy_id | policy_class 
@@ -22,6 +12,17 @@ source:
   policy_id: null
   policy_class:
     __target__: null
+
+
+wandb:
+  enabled: false
+  kwargs:
+    project: "sre-eval"
+    group: ${env.id}_${env.kwargs.ego}_${env.kwargs.reward}
+    name: ${run.name}
+    mode: "online"
+    dir: ${run.output_dir}/wandb
+    notes: null
 
 
 env:
@@ -35,4 +36,4 @@ hydra:
   job:
     chdir: true
   run:
-    dir: ${hydra:runtime.cwd}/outputs/eval/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}
+    dir: ${run.output_dir}/eval/${now:%Y-%m-%d}_${now:%H-%M-%S}_${run.name}
