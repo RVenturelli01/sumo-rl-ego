@@ -54,10 +54,6 @@ class BaseMetricsTracker(BaseEnvPlugin):
         pass
 
     @abstractmethod
-    def finalize_episode_metrics(self, info):
-        pass
-
-    @abstractmethod
-    def get_log_metrics(self):
+    def compute_episode_metrics(self, obs, action, next_obs, reward, info):
         pass
 

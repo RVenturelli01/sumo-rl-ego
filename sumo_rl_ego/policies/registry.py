@@ -1,6 +1,3 @@
-from pathlib import Path
-
-
 POLICY_REGISTRY = {}
 
 
@@ -12,4 +9,4 @@ def register_policy(name):
 
 
 def list_policies():
-    return list(POLICY_REGISTRY.keys())
+    return sorted(POLICY_REGISTRY.keys())

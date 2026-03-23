@@ -1,14 +1,30 @@
-import traci
+import os
 
-SUMO_CMD = [
-    "sumo",
-    "-c", "scenarios/+_cross/cross.sumocfg"
-]
+import pytest
 
-traci.start(SUMO_CMD)
 
-for step in range(20):
-    traci.simulationStep()
-    print("Step:", step)
+pytestmark = pytest.mark.skipif(
+    os.getenv("SUMO_RL_EGO_RUN_INTEGRATION") != "1",
+    reason="Set SUMO_RL_EGO_RUN_INTEGRATION=1 to run SUMO-backed tests.",
+)
 
-traci.close()
+
+def test_make_env_smoke():
+    pytest.importorskip("traci")
+    import sumo_rl_ego as sre
+
+    env = sre.make_env("HighwayEgo-v0", seed=0, reward="fast", ego="discrete", use_gui=False)
+
+    try:
+        obs, _ = env.reset()
+        action = env.action_space.sample()
+        next_obs, reward, terminated, truncated, info = env.step(action)
+
+        assert obs is not None
+        assert next_obs is not None
+        assert isinstance(reward, float)
+        assert isinstance(terminated, bool)
+        assert isinstance(truncated, bool)
+        assert isinstance(info, dict)
+    finally:
+        env.close()

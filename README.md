@@ -1,154 +1,252 @@
 # SUMO RL Ego
 
-A modular reinforcement learning framework for ego-vehicle policy training and evaluation in [SUMO](https://eclipse.dev/sumo/), built on [Gymnasium](https://gymnasium.farama.org/) and [Stable-Baselines3](https://stable-baselines3.readthedocs.io/).
+`sumo-rl-ego` is a modular toolkit for SUMO-based ego-vehicle reinforcement learning. It combines a composable environment layer with a lightweight workflow API so you can build custom driving tasks, evaluate policies, and integrate training into your existing research stack without adopting a monolithic framework.
 
----
+## At A Glance
 
-## Key Contributions
+- Modular SUMO environments built on reusable observation, reward, ego-control, and metrics components.
+- Research-oriented workflow helpers for environment creation, policy wrapping, rollout, evaluation, and GUI play mode.
+- Clear package boundaries between the environment toolkit and optional experiment infrastructure.
+- Examples, built-in scenarios, and tests that make the repository easier to adopt and extend.
 
-1. **Gymnasium-Compatible SUMO Wrapper** — A modern `SumoEnv` (replacing deprecated Gym) with a plugin architecture: swap ego controllers, observation builders, reward functions, and metrics without touching core code.
+## Why This Project
 
-2. **Plugin-Based Extensibility** — Every environment component (ego controller, observation builder, reward function, metrics tracker) is a plugin resolved at runtime via Hydra's `_target_` mechanism. Swap or add components without modifying core code.
+Many SUMO RL repositories tightly couple environment design, experiment code, and training infrastructure. This project separates those concerns deliberately.
 
-3. **Hydra-Driven Experiment Pipeline** — Fully declarative YAML configs with composable groups (`env/`, `rl/`), CLI overrides, multirun sweeps, and automatic timestamped output directories.
+- `sumo_gym_ego` provides the environment construction layer.
+- `sumo_rl_ego` provides the higher-level workflow layer.
+- `experiments/` adds optional tooling around the package API rather than defining the core architecture.
 
-4. **Standardized Benchmark Scenarios** — 19 curated SUMO scenarios (highways, roundabouts, T/+ intersections) for reproducible cross-method comparisons.
+The result is a cleaner foundation for researchers and developers who want both flexibility and a predictable public interface.
 
-5. **Unified Policy Interface** — Both RL agents (`SB3Policy`) and handcrafted heuristics (`BasePolicy`) share the same `predict(obs) → action` interface for direct comparison.
+## Who It Is For
 
----
+- Researchers who want to train with Stable-Baselines3 or custom pipelines while keeping environment logic modular.
+- Developers who want ready-to-use SUMO ego-driving environments without rebuilding basic rollout and evaluation utilities.
+- Teams who value explicit APIs, reusable components, and a straightforward path from packaged defaults to custom environments.
 
-## Repository Structure
+## Package Architecture
 
-```
-sumo_rl_ego/
-├─ sumo_gym_ego/            # Core Gymnasium wrapper
-│  ├─ env.py                #   SumoEnv (reset / step / render)
-│  ├─ core/                 #   SumoSimulation, SumoConfig, SimBus, EgoStatus, BaseEnvPlugin
-│  ├─ ego/                  #   EgoController base + default implementation
-│  ├─ observation/          #   ObservationBuilder base + default
-│  ├─ reward/               #   RewardFunction base + default
-│  └─ metrics/              #   MetricsTracker base + default
-│
-├─ plugins/                 # Drop-in plugin implementations
-│  ├─ egos/                 #   HighwayDiscreteEgo, HighwayContinuousEgo, HighwayOneLaneDiscreteEgo
-│  ├─ observations/         #   HighwayObs
-│  ├─ rewards/              #   HighwayBasic/Fast/Lane/SmoothReward + composable components
-│  ├─ metrics/              #   TerminationActionMetrics
-│  └─ policies/             #   Handcrafted heuristic policies (MyPolicy)
-│
-├─ infra/                   # Experiment infrastructure
-│  ├─ builders/             #   env_factory (build_env), model_factory (build_model, load_model)
-│  ├─ trainer/              #   train() loop
-│  ├─ policy/               #   BasePolicy (ABC), SB3Policy wrapper
-│  └─ utils/                #   CustomLogsCallback, find_repo_root
-│
-└─ scenarios/               # Curated SUMO .sumocfg benchmarks
-   ├─ highway_fast/         #   (+ highway_fast_modified, highway_slow_3lanes, …)
-   ├─ roundabout/
-   ├─ t_cross_3_way/        #   (+ empty, front_car, po, rand_speed, slow, …)
-   ├─ t_cross_5_way/        #   (+ no_car, same_pr)
-   └─ …                     #   19 scenarios total
+| Package | Role | What it provides |
+| --- | --- | --- |
+| `sumo_gym_ego` | Environment toolkit | `SumoEnv`, `SumoConfig`, plugin interfaces, composite plugins, and reusable modules under `obs`, `reward`, `ego`, and `metrics` |
+| `sumo_rl_ego` | Workflow layer | `make_env`, `make_vec_env`, `Policy`, policy adapters/loaders, rollout helpers, evaluation, play mode, and registries for envs and policies |
 
-experiments/                # Entry-point scripts + Hydra configs
-├─ train.py  finetune.py  eval.py  play.py
-└─ configs/
-   ├─ exp/                  #   Root configs per entry point (train, finetune, eval, play)
-   ├─ env/                  #   Environment groups (highway_fast, highway_lane, highway_smooth)
-   └─ rl/                   #   Algorithm groups (dqn, ppo, dqn_finetune)
+### `sumo_rl_ego` folder structure
 
-outputs/                    # Auto-generated timestamped run dirs (model, monitor, TensorBoard, config)
-```
+- `sumo_rl_ego/workflows/`: episode execution, rollout, evaluation, and play helpers
+- `sumo_rl_ego/policies/`: policy interfaces, wrappers, registry, and built-in rule-based policies
+- `sumo_rl_ego/sumo_envs/`: built-in environment registrations and packaged SUMO scenarios
 
----
+Experiment-side Hydra and SB3 wiring lives under `experiments/`, not in the public packages.
 
-## User Guide
+### `sumo_gym_ego`
 
-### Installation
+Use `sumo_gym_ego` when you want direct control over environment design.
+
+Main public exports:
+
+- `SumoEnv`
+- `SumoConfig`
+- `EgoStatus`
+- `BaseEnvPlugin`
+- `BaseEgoController`
+- `BaseObservationBuilder`
+- `BaseRewardFunction`
+- `BaseMetricsTracker`
+- `CompositePlugin`
+- `CompositeObservation`
+- `CompositeReward`
+- `CompositeMetricsTracker`
+- `obs`
+- `reward`
+- `ego`
+- `metrics`
+
+### `sumo_rl_ego`
+
+Use `sumo_rl_ego` when you want a compact, researcher-friendly layer on top of the environment toolkit.
+
+Main public exports:
+
+- `make_env`
+- `make_vec_env`
+- `list_envs`
+- `Policy`
+- `policy_from_model`
+- `load_policy`
+- `list_policies`
+- `run_episode`
+- `rollout`
+- `evaluate_policy`
+- `play_policy`
+
+## Engineering Qualities
+
+The repository already exposes several signals of quality and maintainability:
+
+- A clean split between low-level environment construction and high-level RL workflow helpers.
+- A concise public API surfaced directly from both packages.
+- Built-in registration for environments and policies, including `HighwayEgo-v0` and `safe_speed_v1`.
+- Example scripts for environment creation, custom environments, training, and evaluation.
+- Thin experiment entry points under `experiments/` for train, eval, and play workflows.
+- Tests for public API behavior, rollout utilities, SUMO integration, and GUI-related flows.
+
+Hydra, Weights & Biases, TensorBoard, and related tooling remain optional. They are available for experiment workflows without being coupled to the core packages.
+
+## Install
+
+The project expects a working SUMO installation with `sumo` available on your `PATH`.
+
+- `libsumo` is used for headless execution.
+- `traci` is used for GUI play mode.
+
+### Minimal install
 
 ```bash
 pip install -e .
 ```
 
-Requires a working [SUMO installation](https://sumo.dlr.de/docs/Installing/index.html) with `SUMO_HOME` set.
+### Full setup
 
-### Running Experiments
-
-All entry points live in `experiments/` and are Hydra-powered. Run from the `sumo-rl-ego/` directory. Any config value can be overridden from the CLI:
+This creates a local virtual environment, installs optional experiment and development dependencies, and checks for the `sumo` binary.
 
 ```bash
-# Example: training
-python experiments/train.py                         
-python experiments/train.py rl=ppo env=highway_lane seed=42
-python experiments/train.py rl.model.learning_rate=1e-4 rl.training.total_timesteps=100000
-
-# Multirun sweeps
-python experiments/train.py --multirun rl.model.learning_rate=1e-3,3e-4,1e-4 seed=0,1,2
+./setup.sh
 ```
 
-### Configuration
+Smoke test:
 
-Configs are composed from independent groups merged at runtime:
-
-| Group | Purpose | Examples |
-|-------|---------|----------|
-| `env/` | Scenario, ego, obs, reward, metrics | `highway_fast`, `highway_smooth` |
-| `rl/` | Algorithm + hyperparameters | `dqn`, `ppo` |
-| `exp/` | Root config per entry point (sets group defaults) | `train`, `eval` |
-
-Example root config:
-
-```yaml
-# exp/train.yaml
-env: highway_fast
-rl: dqn
-name: train_${rl.algorithm}_${name}
-seed: 0
+```bash
+python -c "import sumo_rl_ego as sre; print(sre.list_envs())"
 ```
 
-### Extending the Framework
+Optional experiment tooling only:
 
-To add a new plugin (e.g. a custom reward):
+```bash
+pip install -e ".[experiments]"
+```
 
-1. Create a class inheriting from the appropriate base (`RewardFunction`, `EgoController`, `ObservationBuilder`, `MetricsTracker`, or `BasePolicy`) under `plugins/`.
-2. Reference it in an env config via its Hydra `_target_` path:
-   ```yaml
-   reward:
-     _target_: sumo_rl_ego.plugins.rewards.my_reward.MyReward
-     weight_progress: 1.0
-   ```
-3. Run as usual — no core code changes needed.
+## Quickstart
 
----
+### Create a built-in environment
 
-## Infra API Reference
+```python
+import sumo_rl_ego as sre
 
-The `sumo_rl_ego.infra` module exposes reusable building blocks for custom training pipelines.
+env = sre.make_env(
+    "HighwayEgo-v0",
+    seed=0,
+    reward="fast",
+    ego="discrete",
+    use_gui=False,
+)
+```
 
-#### Builders
+This is the fastest path into the library: instantiate a ready-made environment and connect it to your own training or evaluation loop.
 
-| Function | Description |
-|----------|-------------|
-| `build_env(cfg, seed) → SumoEnv` | Instantiates a fully configured SUMO environment from a Hydra config (ego, obs, reward, metrics, scenario paths). |
-| `build_model(env, cfg, seed)` | Creates a new SB3 model (DQN, PPO) with hyperparameters from config. |
-| `load_model(env, cfg, load_path, seed)` | Loads a saved SB3 model from disk, optionally overriding hyperparameters. |
+### Build a custom environment
 
-#### Training
+```python
+from pathlib import Path
 
-| Function | Description |
-|----------|-------------|
-| `train(model, cfg)` | Runs `model.learn()` with training params from config and a `CustomLogsCallback` for TensorBoard metric bridging. |
+import sumo_gym_ego as sge
 
-#### Policy Interface
+scenario = Path("sumo_rl_ego/sumo_envs/scenarios/highway_fast_modified/highway.sumocfg")
 
-| Class | Description |
-|-------|-------------|
-| `BasePolicy` (ABC) | Abstract interface: `predict(obs) → action` and optional `reset()`. Inherit this for handcrafted policies. |
-| `SB3Policy(BasePolicy)` | Wraps any saved SB3 model into the `BasePolicy` interface (deterministic prediction). |
+env = sge.SumoEnv(
+    sumocfg_files=[str(scenario)],
+    config=sge.SumoConfig(use_gui=False, ego_id="ego", seed=0),
+    ego_controller=sge.ego.HighwayDiscreteEgo(),
+    obs_builder=sge.CompositeObservation([
+        sge.obs.EgoSpeedObs(max_speed=50.0),
+        sge.obs.EgoLaneObs(),
+    ]),
+    reward_function=sge.CompositeReward([
+        sge.reward.StepPenalty(penalty=-0.2),
+        sge.reward.SpeedReward(max_speed=50.0),
+    ]),
+    metrics_tracker=sge.CompositeMetricsTracker([
+        sge.metrics.EgoFeatureMetrics(window=100),
+    ]),
+)
+```
 
-#### Utilities
+This lower-level path is intended for custom scenario design, reward shaping, observation design, and instrumentation.
 
-| Symbol | Description |
-|--------|-------------|
-| `CustomLogsCallback` | SB3 callback that forwards custom metrics from env `info["log"]` to the training logger. |
-| `find_repo_root()` | Locates the repository root by searching parent directories for marker files. |
+## Typical Workflows
+
+### Train with your own pipeline
+
+```python
+import sumo_rl_ego as sre
+from stable_baselines3 import DQN
+
+env = sre.make_vec_env(
+    "HighwayEgo-v0",
+    n_envs=8,
+    base_seed=0,
+    reward="fast",
+    ego="discrete",
+    use_gui=False,
+)
+
+model = DQN("MlpPolicy", env, learning_rate=5e-4, verbose=1)
+model.learn(total_timesteps=200_000)
+```
+
+### Wrap a policy
+
+```python
+import sumo_rl_ego as sre
+
+
+class KeepSpeedPolicy(sre.Policy):
+    def predict(self, obs):
+        return 0
+
+
+policy = sre.policy_from_model(model)
+policy = sre.policy_from_model(lambda obs: 0)
+policy = sre.load_policy("safe_speed_v1")
+```
+
+### Evaluate behavior
+
+```python
+import sumo_rl_ego as sre
+
+env = sre.make_env("HighwayEgo-v0", seed=0, reward="fast", ego="discrete")
+policy = sre.load_policy("safe_speed_v1")
+
+result = sre.evaluate_policy(env, policy, n_episodes=5, seed=0)
+print(result.return_mean, result.event_counts)
+env.close()
+```
+
+For interactive inspection, enable `use_gui=True` and use `play_policy(...)`.
+
+## Scenario Gallery
+
+The repository already includes static scenario previews that work well in a README and make the project feel much more tangible.
+
+| Highway | Roundabout | Intersection |
+| --- | --- | --- |
+| ![Highway scenario](sumo_rl_ego/sumo_envs/scenarios/highway_fast_modified/500x.png) | ![Roundabout scenario](sumo_rl_ego/sumo_envs/scenarios/roundabout/500x.png) | ![T-cross scenario](sumo_rl_ego/sumo_envs/scenarios/t_cross_3_way/500x.png) |
+
+## Examples And Experiments
+
+Examples under `examples/`:
+
+- `examples/make_env.py`
+- `examples/custom_env.py`
+- `examples/train_with_sb3.py`
+- `examples/evaluate_policy.py`
+
+Experiment entry points under `experiments/`:
+
+- `experiments/train.py`
+- `experiments/eval.py`
+- `experiments/play.py`
+
+These scripts are intentionally thin wrappers around the package API. They add practical experiment tooling without changing the architecture of the library itself.

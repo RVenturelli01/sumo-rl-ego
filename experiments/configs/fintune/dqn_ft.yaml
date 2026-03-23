@@ -1,0 +1,52 @@
+run:
+  name: "dqn_v0.1_ft"
+  seed: 0
+  output_dir: ${hydra:runtime.output_dir}
+
+wandb:
+  enabled: true
+  kwargs:
+    project: "sre-train"
+    group: null
+    name: ${run.name}
+    mode: "online"
+    sync_tensorboard: true
+    dir: "/tmp/wandb"
+    notes: null
+
+source:
+  type: "model"  # fresh | model
+  model_path: /work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs/2026-03-20_15-24-38_dqn_v0/model.zip
+  replay_buffer_path: null
+
+env:
+  id: "HighwayEgo-v0"
+  n_envs: 1
+  kwargs: {}
+
+model:
+  algo: "DQN"
+  kwargs: {}
+  overrides:
+    learning_starts: 0
+    exploration_fraction: 0.1
+    exploration_initial_eps: 0.05
+    exploration_final_eps: 0.005
+
+learn:
+  kwargs:
+    total_timesteps: 1e6
+    log_interval: 500
+    reset_num_timesteps: false
+    progress_bar: true
+
+save:
+  config_path: ${run.output_dir}/config_resolved.yaml
+  model_path: ${run.output_dir}/model.zip
+  replay_buffer_path: null
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: ${hydra:runtime.cwd}/outputs/train/${now:%Y-%m-%d}_${now:%H-%M-%S}_${run.name}

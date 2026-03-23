@@ -1,16 +1,25 @@
+
+name: "play"
+manual: true
 seed: 0
-
-mode: model   # model | policy_id | policy_class
-
-model_path: null  # (if mode=model)
-
-policy_id: null  # (if mode=policy_id)
-
-policy_class:  
-  _target_: sre.policies.MyPolicy    # (if mode=policy_class)
+output_dir: ${hydra:runtime.output_dir}
+auto_env_setup: true
 
 
-env_id: "highway_e1_o2_rfast"  # (if  mode=policy_id or  mode=policy_class)
+# only one between: model_id | model_path | policy_id | policy_class 
+source:  
+  model_id: null 
+  model_path: null
+  policy_id: null
+  policy_class: 
+    __target__: null
+
+
+env:
+  id: "HighwayEgo-v0"
+  kwargs:
+    reward: "fast"
+    ego: "discrete"
 
 
 hydra:

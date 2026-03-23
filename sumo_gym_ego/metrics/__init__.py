@@ -1,10 +1,8 @@
-from .action_distr_metrics import ActionDistrMetrics
-from .ego_feature_metrics import EgoFeatureMetrics
-from .terminal_event_metrics import TerminalEventMetrics
+from .action_rate_metrics import ActionRateMetrics
+from .performance_metrics import PerformanceMetrics
 
 
 __all__ = [
-    "ActionDistrMetrics",
-    "EgoFeatureMetrics",
-    "TerminalEventMetrics",
+    "ActionRateMetrics",
+    "PerformanceMetrics"
 ]

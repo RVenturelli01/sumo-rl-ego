@@ -20,5 +20,4 @@ def register_env(env_id):
 
 
 def list_envs():
-    return list(ENV_REGISTRY.keys())
-
+    return sorted(ENV_REGISTRY.keys())

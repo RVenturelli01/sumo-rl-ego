@@ -81,24 +81,14 @@ class CompositeMetricsTracker(CompositePlugin, BaseMetricsTracker):
 
         return metrics
 
-    def finalize_episode_metrics(self, info):
+    def compute_episode_metrics(self, obs, action, next_obs, reward, info):
 
         metrics = {}
 
         for m in self.plugins:
-            metrics.update(m.finalize_episode_metrics(info))
+            metrics.update(m.compute_episode_metrics(obs, action, next_obs, reward, info))
 
         return metrics
-
-    def get_log_metrics(self):
-
-        metrics = {}
-
-        for m in self.plugins:
-            metrics.update(m.get_log_metrics())
-
-        return metrics
-    
 
 
 

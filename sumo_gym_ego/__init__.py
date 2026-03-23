@@ -5,7 +5,7 @@ Modular Gymnasium environment for SUMO-based reinforcement learning.
 """
 
 # Environment
-from .core.env import SumoGymEgoEnv
+from .core.env import SumoEnv
 
 # Core components
 from .core.config import SumoConfig
@@ -34,9 +34,8 @@ from . import reward
 from . import ego
 from . import metrics
 
-
 __all__ = [
-    "SumoGymEgoEnv",
+    "SumoEnv",
     "SumoConfig",
     "EgoStatus",
     "BaseEnvPlugin",
@@ -44,8 +43,8 @@ __all__ = [
     "BaseObservationBuilder",
     "BaseRewardFunction",
     "BaseMetricsTracker",
-    "CompositePlugins",
-    "CompositeReward",  
+    "CompositePlugin",
+    "CompositeReward",
     "CompositeObservation",
     "CompositeMetricsTracker",
     "obs",

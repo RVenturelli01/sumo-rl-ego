@@ -13,7 +13,7 @@ from .base_plugins import BaseRewardFunction
 from .base_plugins import BaseMetricsTracker
 
 
-class SumoGymEgoEnv(gym.Env):
+class SumoEnv(gym.Env):
     def __init__(self,
                  sumocfg_files: list[str],
                  config=None,
@@ -84,7 +84,7 @@ class SumoGymEgoEnv(gym.Env):
             warnings.warn(
                 "Ego vehicle missing before step. Did you forget to call reset()?",
                 RuntimeWarning,)
-            info = {"termination_reason": "ego_missing_before_step"}
+            info = {"event": "ego_missing_before_step"}
             return self.last_obs, 0.0, True, False, info
 
         self.ego_controller.apply_action(action)
@@ -97,11 +97,8 @@ class SumoGymEgoEnv(gym.Env):
         terminated, truncated, event = self._compute_termination(ego_status)
 
         info = {
-            "status": {
-                "step": self.step_count,
-                "terminated": terminated,
-                "truncated": truncated,
-            },
+            "step": self.step_count,
+            "time": self.step_count*self.config.time_step,
             "event": event,
         }
 
@@ -112,14 +109,12 @@ class SumoGymEgoEnv(gym.Env):
             obs = self.obs_builder.build_obs()
             reward = self.reward_function.compute(self.last_obs, action, obs, info)
 
-
         info["metrics"] = {}
         info["metrics"]["step"] = self.metrics_tracker.compute_step_metrics(self.last_obs, action, obs, reward, info)
 
         if terminated or truncated:
-            info["metrics"]["episode"] = self.metrics_tracker.finalize_episode_metrics(info)
-            info["log"] = self.metrics_tracker.get_log_metrics()
-
+            info["metrics"]["episode"] = self.metrics_tracker.compute_episode_metrics(self.last_obs, action, obs, reward, info)
+            
         self.last_obs = obs
         return obs, reward, terminated, truncated, info
 
@@ -133,7 +128,7 @@ class SumoGymEgoEnv(gym.Env):
         elif truncated:
             event = "timeout"
         else:
-            event = None
+            event = "running"
 
         return terminated, truncated, event
 
@@ -182,16 +177,10 @@ class DefaultObservationBuilder(BaseObservationBuilder):
 class DefaultMetricsTracker(BaseMetricsTracker):
 
     def compute_step_metrics(self, obs, action, next_obs, reward, info):
-        pass
+        return {}
 
-    def finalize_episode_metrics(self, info):
-        pass
-
-    def get_log_metrics(self):
-        pass
-
-    def reset(self):
-        pass
+    def compute_episode_metrics(self, obs, action, next_obs, reward, info):
+        return {}
 
 
 

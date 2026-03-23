@@ -30,15 +30,13 @@ step_penalty = -0.2
 w_arrived = 0.0
 w_crash = -10.0
 w_offroad = -10.0
+w_timeout = -10.0
 weights = [1.0, 1.0, 1.0]  # weights for the reward components (step_penalty, speed, terminal)
-
-# window size for logging metrics
-log_window = 1000  
 
 
 
 @register_env("HighwayEgo-v0")
-class HighwayEgo_v0(sge.SumoGymEgoEnv):
+class HighwayEgo_v0(sge.SumoEnv):
     def __init__(self, 
                  reward: Literal["fast", "safe", "comfort"] = "fast",
                  ego: Literal["discrete", "continuous"] = "discrete",
@@ -81,7 +79,8 @@ class HighwayEgo_v0(sge.SumoGymEgoEnv):
                 sge.reward.TerminalReward(
                     w_crash=w_crash,
                     w_offroad=w_offroad,
-                    w_arrived=w_arrived,)
+                    w_arrived=w_arrived,
+                    w_timeout=w_timeout,)
                 ],
                 weights=weights
             )
@@ -102,14 +101,12 @@ class HighwayEgo_v0(sge.SumoGymEgoEnv):
         if metrics_tracker is None:
             if ego == "discrete":
                 metrics_tracker = sge.CompositeMetricsTracker([
-                    sge.metrics.EgoFeatureMetrics(window=log_window),
-                    sge.metrics.TerminalEventMetrics(window=log_window),
-                    sge.metrics.ActionDistrMetrics(window=log_window),
+                    sge.metrics.PerformanceMetrics(),
+                    sge.metrics.ActionRateMetrics(),
                 ])
             elif ego == "continuous":
                 metrics_tracker = sge.CompositeMetricsTracker([
-                    sge.metrics.EgoFeatureMetrics(window=log_window),
-                    sge.metrics.TerminalEventMetrics(window=log_window),
+                    sge.metrics.PerformanceMetrics(),
                 ])
 
         super().__init__(
@@ -120,4 +117,3 @@ class HighwayEgo_v0(sge.SumoGymEgoEnv):
             ego_controller=ego_controller,
             metrics_tracker=metrics_tracker,
         )
-

@@ -1,28 +1,38 @@
-wandb:
-  project: "sre_eval"
-  run_name: ${mode}
-  notes: 
-  sync_tensorboard: false
 
-
-
+name: "eval"
 n_episodes: 100
 seed: 0
+output_dir: ${hydra:runtime.output_dir}
 
-mode: model   # model | policy_id | policy_class
+wandb:
+  enabled: false
+  kwargs:
+    project: "sre-eval"
+    group: ${env.id}
+    name: ${name}
+    mode: "online"
+    dir: ${output_dir}/wandb
+    notes: null
 
-model_path: null  # (if mode=model)
 
-policy_id: null  # (if mode=policy_id)
+# only one between: model_id | model_path | policy_id | policy_class 
+source: 
+  model_id: null 
+  model_path: null
+  policy_id: null
+  policy_class:
+    __target__: null
 
-policy_class:  
-  _target_: sre.policies.MyPolicy    # (if mode=policy_class)
 
-
-env_id: "highway_e1_o2_rfast"  # (if  mode=policy_id or  mode=policy_class)
+env:
+  id: "HighwayEgo-v0"
+  kwargs:
+    reward: "fast"
+    ego: "discrete"
 
 
 hydra:
+  job:
+    chdir: true
   run:
-    dir: .
-  output_subdir: null
+    dir: ${hydra:runtime.cwd}/outputs/eval/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}

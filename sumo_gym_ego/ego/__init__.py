@@ -4,6 +4,6 @@ from .highway_discrete_ego import HighwayDiscreteEgo
 
 __all__ = [
     "HighwayContinuousEgo",
-    "OneLaneDiscreteEgo",
+    "HighwayOneLaneDiscreteEgo",
     "HighwayDiscreteEgo",
 ]

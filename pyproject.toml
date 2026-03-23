@@ -5,11 +5,26 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sumo-rl-ego"
 version = "0.1.0"
-description = "Framework for training RL agents on SUMO ego environments"
+description = "SUMO ego environments and lightweight RL helpers for researcher-defined pipelines"
 requires-python = ">=3.9"
 dependencies = [
     "gymnasium",
     "numpy",
+    "stable-baselines3",
+    "libsumo",
+    "traci",
+]
+
+[project.optional-dependencies]
+experiments = [
+    "hydra-core",
+    "omegaconf",
+    "wandb",
+    "tqdm",
+    "tensorboard",
+]
+dev = [
+    "pytest",
 ]
 
 [tool.setuptools.packages.find]

@@ -1,70 +1,71 @@
-wandb_kwargs:
-  project: "sre-train"
-  group: ${env.id}
-  name: ${name}
-  sync_tensorboard: true
-  dir: ${hydra:runtime.output_dir}/wandb
-  notes: 
 
-
-# EXPERIMENT
 name: "dqn_v1"
 seed: 0
-finetuning: false
+output_dir: ${hydra:runtime.output_dir}
 
 
+wandb:
+  enabled: true
+  kwargs:
+    project: "sre-train"
+    group: ${env.id}
+    name: ${name}
+    mode: "online"
+    dir: ${output_dir}/wandb
+    notes: null
 
-# ENV
 env:
   id: "HighwayEgo-v0"
   n_envs: 16
-  env_args:
+  kwargs:
     reward: "fast"
     ego: "discrete"
 
-
-# TRAINING
-learn_kwargs:
-  total_timesteps: 2e6  # 500000
-  log_interval: 100
-  reset_num_timesteps: false 
-  progress_bar: true
-    
-
-# ALGO
-algo: 
-  type: "DQN"
-  algo_kwargs:
-    policy: MlpPolicy
-    learning_rate: 5e-4  # 1e-4
-    buffer_size: 500000  # 1000000
-    learning_starts: 10000  # 100
-    batch_size: 128  # 32
-    tau: 1.0  # 1.0
-    gamma: 0.99  # 0.99
-    train_freq: 4  # 4
-    gradient_steps: 8  # 1
+model:
+  algo: "DQN"
+  kwargs:
+    policy: "MlpPolicy"
+    learning_rate: 5e-4
+    buffer_size: 500000
+    learning_starts: 10000
+    batch_size: 128
+    tau: 1.0
+    gamma: 0.99
+    train_freq: 4
+    gradient_steps: 8
     replay_buffer_class: null
     replay_buffer_kwargs: null
     optimize_memory_usage: false
     n_steps: 1
-    target_update_interval: 2000 
-    exploration_fraction: 0.1  # 0.1
-    exploration_initial_eps: 1.0  # 1.0
-    exploration_final_eps: 0.05  # 0.05
-    max_grad_norm: 10  # 10
-    stats_window_size: 100  # 100
-    policy_kwargs: 
-      net_arch: [256, 256]  # None
+    target_update_interval: 2000
+    exploration_fraction: 0.1
+    exploration_initial_eps: 1.0
+    exploration_final_eps: 0.05
+    max_grad_norm: 10
+    stats_window_size: 100
+    policy_kwargs:
+      net_arch: [256, 256]
     verbose: 1
     seed: ${seed}
-    device: cpu
-    tensorboard_log: ${hydra:runtime.output_dir}/tensorboard
+    device: "cpu"
+    tensorboard_log: ${output_dir}/tensorboard
+  overrides: {}
 
+learn:
+  kwargs:
+    total_timesteps: 2e6
+    log_interval: 100
+    reset_num_timesteps: false
+    progress_bar: true
 
+save:
+  config_dir: ${output_dir}
+  model_dir: ${output_dir}
+  replay_buffer_dir: ${output_dir}
 
 hydra:
   job:
     chdir: true
   run:
-    dir: ${hydra:runtime.cwd}/outputs/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}
+    dir: ${output_dir}/outputs/train/${now:%Y-%m-%d}_${now:%H-%M-%S}_${name}
+

@@ -8,10 +8,12 @@ class TerminalReward(BaseRewardFunction):
         w_crash=-1.0,
         w_offroad=-1.0,
         w_arrived=1.0,
+        w_timeout=1.0,
     ):
         self.w_crash = w_crash
         self.w_offroad = w_offroad
         self.w_arrived = w_arrived
+        self.w_timeout = w_timeout
 
 
     def compute(self, obs, action, next_obs, info):
@@ -21,6 +23,9 @@ class TerminalReward(BaseRewardFunction):
 
         if info["event"] == "collided":
             return self.w_crash
+        
+        if info["event"] == "timeout":
+            return self.w_timeout
 
         if info["event"] == "off_road":
             return self.w_offroad

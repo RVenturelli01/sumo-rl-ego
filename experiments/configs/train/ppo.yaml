@@ -1,32 +1,39 @@
-wandb:
-  project: "sre_train"
-  run_name: ${experiment.name}
-  notes: 
-  sync_tensorboard: true
-
-
-experiment:
-  name: "train_${experiment.env_id}_${experiment.algo}"
+run:
+  name: "ppo_v1"
   seed: 0
+  output_dir: ${hydra:runtime.output_dir}
 
-  # ENV
-  env_id: "highway_e2_o2_rfast"
+wandb:
+  enabled: true
+  kwargs:
+    project: "sre-train"
+    group: ${env.id}
+    name: ${run.name}
+    mode: "online"
+    sync_tensorboard: true
+    dir: "/tmp/wandb"
+    notes: null
+
+source:
+  type: "fresh"  # fresh | model
+  model_path: null
+  replay_buffer_path: null
+
+env:
+  id: "HighwayEgo-v0"
   n_envs: 8
+  kwargs:
+    reward: "fast"
+    ego: "discrete"
 
-  # TRAINING
-  learn_kwargs:
-    total_timesteps: 10000
-    log_interval: 500
-    reset_num_timesteps: true
-    progress_bar: true
-
-  # ALGO
+model:
   algo: "PPO"
-  algo_kwargs:
+  kwargs:
+    policy: "MlpPolicy"
     learning_rate: 3e-4
     gamma: 0.99
     gae_lambda: 0.95
-    n_steps: 1024        
+    n_steps: 1024
     batch_size: 256
     n_epochs: 10
     ent_coef: 0.01
@@ -37,12 +44,26 @@ experiment:
     sde_sample_freq: 4
     policy_kwargs:
       net_arch: [256, 256]
-    seed: ${experiment.seed}
-    tensorboard_log: null
+    verbose: 1
+    seed: ${run.seed}
+    device: "cpu"
+    tensorboard_log: ${run.output_dir}/tensorboard
+  overrides: {}
 
+learn:
+  kwargs:
+    total_timesteps: 10000
+    log_interval: 500
+    reset_num_timesteps: true
+    progress_bar: true
+
+save:
+  config_path: ${run.output_dir}/config_resolved.yaml
+  model_path: ${run.output_dir}/model.zip
+  replay_buffer_path: null
 
 hydra:
   job:
     chdir: true
   run:
-    dir: outputs/${now:%Y-%m-%d}_${now:%H-%M-%S}_${experiment.name}
+    dir: ${hydra:runtime.cwd}/outputs/train/${now:%Y-%m-%d}_${now:%H-%M-%S}_${run.name}

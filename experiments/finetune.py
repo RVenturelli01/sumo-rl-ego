@@ -8,11 +8,13 @@ from stable_baselines3 import A2C, DQN, PPO, SAC, TD3
 
 from .config_utils import (
     init_wandb, 
-    print_cfg, 
-    confirm_cfg,
+    print_config, 
+    confirm_config,
+    load_saved_run_config,
     save_outputs,
     WandbCustomCallback,
 )
+
 
 ALGO_REGISTRY = {
     "PPO": PPO,
@@ -21,26 +23,41 @@ ALGO_REGISTRY = {
     "SAC": SAC,
     "TD3": TD3,
 }
-    
-    
-def print_cfg(cfg, title):
-    print(f"\n========== {title} CONFIG ==========\n")
-    print(OmegaConf.to_yaml(cfg, resolve=True))
-    print("================== Summary ==================\n")
-    print(f"Environment: {cfg.env.id} (x{cfg.env.n_envs} envs)")
-    print(f"Environment arguments: {cfg.env.kwargs}")
-    print(f"Algorithm: {cfg.model.algo}")
-    print(f"Timesteps: {cfg.learn.kwargs.total_timesteps}")
-    print("\n=============================================\n")
-    
-    
 
-@hydra.main(version_base=None, config_path="configs/train", config_name="dqn.yaml")
+
+
+def build_finetune_cfg(cfg: DictConfig) -> DictConfig:
+    source_cfg = load_saved_run_config(cfg.source.model_path)
+    final_cfg = OmegaConf.create(OmegaConf.to_container(cfg, resolve=False))
+    final_cfg.env = source_cfg.env
+    final_cfg.model.algo = source_cfg.model.algo
+    return final_cfg
+
+
+def apply_model_overrides(model, overrides_cfg: DictConfig) -> None:
+    overrides = OmegaConf.to_container(overrides_cfg, resolve=True)
+
+    for key, value in overrides.items():
+        if value is None:
+            continue
+        if not hasattr(model, key):
+            print(f"Warning: model has no attribute '{key}', skipping override")
+            continue
+
+        setattr(model, key, value)
+        print(f"override: {key} -> {value}")
+
+        if key == "learning_rate":
+            model._setup_lr_schedule()
+
+
+@hydra.main(version_base=None, config_path="configs/finetune", config_name="dqn.yaml")
 def main(cfg: DictConfig) -> None:
     _ = HydraConfig.get().runtime.output_dir
+    cfg = build_finetune_cfg(cfg)
 
-    print_cfg(cfg, "TRAIN")
-    confirm_cfg()
+    print_config(cfg, "FINE-TUNE")
+    confirm_config()
     
     run = init_wandb(cfg)
     env = None
@@ -56,10 +73,11 @@ def main(cfg: DictConfig) -> None:
 
         print("Initializing model...")
         algo_cls = ALGO_REGISTRY[cfg.model.algo]
-        model = algo_cls(
-            env=env, 
-            **cfg.model.kwargs
+        model = algo_cls.load(
+            load_path=cfg.source.model_path,
+            env=env,
         )
+        apply_model_overrides(model, cfg.model.overrides)
 
         print("Starting training...\n")
         model.learn(
@@ -70,7 +88,7 @@ def main(cfg: DictConfig) -> None:
         print("\nTraining finished.")
         save_outputs(cfg, model)
         print("Run completed successfully.\n")
-        
+
     finally:
         if env is not None:
             env.close()
