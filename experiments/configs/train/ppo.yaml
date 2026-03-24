@@ -1,7 +1,7 @@
 run:
   name: "ppo_v0"
   seed: 0
-  output_dir: ${oc.env:HOME}/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs
+  output_dir: /work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs
 
 
 wandb:
@@ -27,16 +27,16 @@ model:
   kwargs:
     policy: "MlpPolicy"
     learning_rate: 3e-4
-    n_steps: 4096  # 2048
+    n_steps: 1024  # 2048
     batch_size: 256  # 64
-    n_epochs: 10
+    n_epochs: 5
     gamma: 0.995
     gae_lambda: 0.95
     clip_range: 0.2
     clip_range_vf: null
     normalize_advantage: true
-    ent_coef: 0.01
-    vf_coef: 0.5
+    ent_coef: 0.03
+    vf_coef: 0.8
     max_grad_norm: 0.5
     use_sde: false
     sde_sample_freq: -1
@@ -45,16 +45,17 @@ model:
     target_kl: null
     stats_window_size: 100
     policy_kwargs: 
-      net_arch: [256, 256]
+      net_arch: [256, 128]
     seed: ${run.seed}
     device: "cpu"
     tensorboard_log: tensorboard
+    verbose: 1
 
 learn:
   rolling_window: 1000
   kwargs:
     total_timesteps: 2e6
-    log_interval: 100
+    log_interval: 1  # every rollout make a log (rollout = n_steps * n_envs)
     reset_num_timesteps: false
     progress_bar: true
 

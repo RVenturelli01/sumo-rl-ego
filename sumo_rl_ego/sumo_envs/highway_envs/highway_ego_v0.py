@@ -132,6 +132,11 @@ class HighwayEgo_v0(sge.SumoEnv):
             elif ego == "continuous":
                 metrics_tracker = sge.CompositeMetricsTracker([
                     sge.metrics.PerformanceMetrics(),
+                    sge.metrics.ActionRateMetrics2(
+                        max_acc=ENV_PARAMS.max_acc,
+                        max_dec=ENV_PARAMS.max_dec,
+                        lane_threshold=ENV_PARAMS.lane_threshold,
+                    ),
                 ])
 
         super().__init__(

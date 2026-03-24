@@ -117,6 +117,7 @@ def load_policy_from_cfg(cfg: DictConfig, env=None) -> DictConfig:
         model = algo_cls.load(
             path=cfg.source.model_path,
             env=env,
+            device="cpu",
         )
         return sre.policy_from_model(model)
     

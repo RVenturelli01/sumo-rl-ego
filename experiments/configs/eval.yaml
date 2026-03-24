@@ -2,7 +2,7 @@ run:
   name: "eval"
   n_episodes: 100
   seed: 0
-  output_dir: ${oc.env:HOME}/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs
+  output_dir: /work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs
 
 
 # only one between: model_id | model_path | policy_id | policy_class 

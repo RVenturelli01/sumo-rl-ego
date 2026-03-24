@@ -2,9 +2,19 @@ from sumo_gym_ego import BaseMetricsTracker
 from sumo_gym_ego.ego.highway_discrete_ego import DiscreteActions
 
 
-class ActionRateMetrics(BaseMetricsTracker):
+class ActionRateMetrics2(BaseMetricsTracker):
 
-    def __init__(self):
+    def __init__(
+            self,
+            max_acc=2.0,        # m/s^2
+            max_dec=-2.0,       # m/s^2
+            lane_threshold=0.5  # threshold for lane change
+        ):
+        
+        self.max_acc = max_acc
+        self.max_dec = max_dec
+        self.lane_threshold = lane_threshold
+
         self.reset()
 
     def reset(self):
@@ -16,11 +26,20 @@ class ActionRateMetrics(BaseMetricsTracker):
 
 
     def compute_step_metrics(self, obs, action, next_obs, reward, info):
-        self.count_ss += action == DiscreteActions.SS
-        self.count_acc += action == DiscreteActions.ACC
-        self.count_dec += action == DiscreteActions.DEC
-        self.count_lcl += action == DiscreteActions.LCL
-        self.count_lcr += action == DiscreteActions.LCR
+        a_long = action[0]
+        lane_cmd = action[1]
+
+        if a_long > self.max_acc*0.2:
+            self.count_acc += 1
+        elif a_long < self.max_dec*0.2:
+            self.count_dec += 1
+        else:
+            self.count_ss += 1
+        
+        if lane_cmd > self.lane_threshold:
+            self.count_lcl += 1
+        elif lane_cmd < -self.lane_threshold:
+            self.count_lcr += 1
 
         return {}
 

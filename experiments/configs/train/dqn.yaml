@@ -1,5 +1,5 @@
 run:
-  name: "dqn_v1"
+  name: "dqn_v2"
   seed: 0
   output_dir: /work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs
 
@@ -25,27 +25,27 @@ env:
 model:
   algo: "DQN"
   kwargs:
-    policy: "MlpPolicy"
-    learning_rate: 3e-4
+    policy: MlpPolicy
+    learning_rate: 0.0001
     buffer_size: 500000
     learning_starts: 10000
-    batch_size: 256
+    batch_size: 512
     tau: 1.0
     gamma: 0.99
     train_freq: 4
-    gradient_steps: 4
+    gradient_steps: 8
     replay_buffer_class: null
     replay_buffer_kwargs: null
     optimize_memory_usage: false
     n_steps: 1
     target_update_interval: 1000
-    exploration_fraction: 0.5
+    exploration_fraction: 0.3
     exploration_initial_eps: 0.5
     exploration_final_eps: 0.05
     max_grad_norm: 10
     stats_window_size: 100
     policy_kwargs:
-      net_arch: [256, 128]
+      net_arch: [128, 128]
     verbose: 1
     seed: ${run.seed}
     device: "cpu"
