@@ -1,0 +1,56 @@
+run:
+  name: ppo_v0
+  seed: 0
+  output_dir: /home/fis1/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs
+wandb:
+  enabled: true
+  kwargs:
+    project: sre-train
+    group: HighwayEgo-v0_continuous_fast
+    name: ppo_v0
+    mode: online
+    dir: /home/fis1/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs/wandb
+    sync_tensorboard: true
+    notes: null
+env:
+  id: HighwayEgo-v0
+  n_envs: 16
+  kwargs:
+    reward: fast
+    ego: continuous
+model:
+  algo: PPO
+  kwargs:
+    policy: MlpPolicy
+    learning_rate: 0.0003
+    n_steps: 1024
+    batch_size: 256
+    n_epochs: 5
+    gamma: 0.995
+    gae_lambda: 0.95
+    clip_range: 0.2
+    clip_range_vf: null
+    normalize_advantage: true
+    ent_coef: 0.01
+    vf_coef: 0.5
+    max_grad_norm: 0.5
+    use_sde: false
+    sde_sample_freq: -1
+    rollout_buffer_class: null
+    rollout_buffer_kwargs: {}
+    target_kl: null
+    stats_window_size: 100
+    policy_kwargs:
+      net_arch:
+      - 256
+      - 128
+    seed: 0
+    device: cpu
+    tensorboard_log: tensorboard
+learn:
+  rolling_window: 1000
+  kwargs:
+    total_timesteps: 2000000.0
+    log_interval: 1
+    reset_num_timesteps: false
+    progress_bar: true
