@@ -1,10 +1,12 @@
 
-# taskset -c 12-23 python experiments/finetune.py \
-#     source.model_path=/work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs/2026-03-24_11-41-45_dqn_v1_ft/model.zip \
-#     source.replay_buffer_path=/work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs/2026-03-24_11-41-45_dqn_v1_ft/replay_buffer.pkl \
 
-taskset -c 12-23 python experiments/train.py \
-    --config-name ppo \
-    run.name=ppo_v1 \
-    run.output_dir=/work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs \
+python experiments/eval.py \
+    run.output_dir=/home/ricca/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs \
+    source.policy_id=FastPolicy-v0 \
+    env.kwargs.ego=discrete \
+    run.seed=0 \
+    wandb.enabled=true \
+    run.n_episodes=100 \
+    run.name=eval_FastPolicy-v0_n100
+    
 

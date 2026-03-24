@@ -51,41 +51,113 @@ class EvalMetrics:
         self.data["event_rate/timeouts"].append(int(event == "timeout"))
         self.data["event_rate/successes"].append(int(event == "arrived"))
 
-    def compute(self):
-        out = {}
+
+    def print_metrics(self):
+        current = ""
+
         for k, v in self.data.items():
             if not v:
                 continue
 
-            out[k + "_mean"] = np.mean(v)
+            mean = np.mean(v)
+            std = np.std(v) if k in self.with_std else None
 
-            if k in self.with_std:
-                out[k + "_std"] = np.std(v)
+            sec, name = k.split("/")
+            name = name
 
-        return out
+            if sec != current:
+                current = sec
+                print(f"\n=== {sec} ===")
+
+            if std is not None:
+                print(f"{name}: {mean:.3f} ± {std:.3f}")
+            else:
+                print(f"{name}: {mean:.3f}")
+
+    def log_metrics(self, run):
+        # log vertical histogram of events (one column per event type)
+        # log vertical bar histogram of returns
+        # log horizontal bar histogram of time
+        # log horizontal bar histogram of avg_speed
+        # log returns vs episodes scatter plot
+        # log avg_speed vs episodes scatter plot
+        # log time vs episodes scatter plot
+
+        log_histogram(
+            data=self.data["performance/duration"],
+            value="duration",
+            title="Time Distribution")
+
+        log_histogram(
+            data=self.data["performance/return"],
+            value="return",
+            title="Return Distribution")
+
+        log_histogram(
+            data=self.data["performance/avg_speed"],
+            value="avg_speed",
+            title="Average Speed Distribution")
+        
+        log_bar_histogram(
+            data=[
+                ["collisions", np.mean(self.data["event_rate/collisions"])],
+                ["off_road", np.mean(self.data["event_rate/off_road"])],
+                ["timeouts", np.mean(self.data["event_rate/timeouts"])],
+                ["successes", np.mean(self.data["event_rate/successes"])],
+            ],
+            title="Event Rates",
+            x_label="Event",
+            y_label="Rate"
+        )
+
+
+# def log_histogram(data, title, x_label, n_bins=10):
+#     y_label = "Frequency"
+
+#     # compute histogram
+#     counts, edges = np.histogram(data, bins=n_bins)
+
+#     # build bar data
+#     bar_data = []
+#     for i in range(len(counts)):
+#         label = (edges[i] + edges[i+1]) / 2
+#         bar_data.append([label, int(counts[i])])
+
+#     log_bar_histogram(
+#         data=bar_data,
+#         title=title,
+#         x_label=x_label,
+#         y_label=y_label
+#     )
+
+
+def log_histogram(data, value, title):
+    data=[[i, float(v)] for i, v in enumerate(data)]
+    print(data)
+
+    table = wandb.Table(
+        data=data,
+        columns=["x", value],
+    )
+    histogram = wandb.plot.histogram(
+        table,
+        value=value,
+        title=title,
+    )
+
+    print(f"Logging histogram: {title}")
+    wandb.log({title: histogram})
     
-    
-def print_metrics(d):
-    current = ""
 
-    for k, v in d.items():
-        if not k.endswith("_mean"):
-            continue
+def log_bar_histogram(data, title, x_label, y_label):
+    table = wandb.Table(
+        data=data,
+        columns=[x_label, y_label]
+    )
 
-        sec, name = k.split("/")
-        name = name.replace("_mean", "")
-
-        if sec != current:
-            current = sec
-            print(f"\n=== {sec} ===")
-
-        std_key = k.replace("_mean", "_std")
-
-        if std_key in d:
-            print(f"{name}: {float(v):.3f} ± {float(d[std_key]):.3f}")
-        else:
-            print(f"{name}: {float(v):.3f}")
-
+    wandb.log({
+        title: wandb.plot.bar(table, x_label, y_label)
+    })
 
 
 def print_eval_cfg(cfg):
@@ -104,6 +176,7 @@ def print_eval_cfg(cfg):
 
     print(f"Number of episodes: {cfg.run.n_episodes}")
     print("\n=============================================\n")
+
 
 
 
@@ -144,12 +217,10 @@ def main(cfg: DictConfig):
             
             metrics.add_episode(info)
 
-        results = metrics.compute()
-
         if run is not None:
-            wandb.log(results)
+            metrics.log_metrics(run)
 
-        print_metrics(results)
+        metrics.print_metrics()
 
     finally:
         if env is not None:
