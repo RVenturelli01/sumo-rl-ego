@@ -83,7 +83,7 @@ class HighwayEgo_v0(sge.SumoEnv):
         obs_builder = sge.CompositeObservation([
             sge.obs.EgoSpeedObs(max_speed=ENV_PARAMS.max_speed),
             sge.obs.EgoLaneObs(),
-            sge.obs.LaneFreeObs(),
+            sge.obs.LaneFreeObs(check_distance=ENV_PARAMS.check_distance),
             sge.obs.NeighborObs(
                 neighbors=[
                     "same_front", "same_back",

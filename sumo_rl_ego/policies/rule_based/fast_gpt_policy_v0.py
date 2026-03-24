@@ -10,23 +10,31 @@ from ...sumo_envs.highway_envs.highway_ego_v0 import ENV_PARAMS
 
 '''
 
-@register_policy("FastGPTPolicy-v0")
-class FastGPTPolicy(Policy):
+@register_policy("FastPolicy-v0")
+class FastPolicy(Policy):
     def __init__(self):
         super().__init__()
 
         # --- thresholds ---
-        self.free_front = 25.0
-        self.close_front = 12.0
-        self.critical_front = 7.0
+        self.free_front = 50.0
+        self.close_front = 30.0
 
-        self.safe_front_lane = 15.0
-        self.safe_back_lane = 10.0
+        # braking model
+        self.max_decel = ENV_PARAMS.dec_value
+
+    # --------------------------------------------------
+    # Braking feasibility
+    # --------------------------------------------------
+    def dist_required(self, d, rel_speed):
+        if rel_speed <= 0:
+            return 0.0
+
+        d_required = (rel_speed ** 2) / (2 * abs(self.max_decel))  
+        return max(d_required, 10)
+
 
     def predict(self, obs):
         ego_speed = obs[0] * ENV_PARAMS.max_speed
-
-        lane_id = obs[1] * ENV_PARAMS.num_lanes
 
         lane_left_free = bool(obs[2])
         lane_right_free = bool(obs[3])
@@ -50,50 +58,51 @@ class FastGPTPolicy(Policy):
         rel_speed_right_back = obs[15] * ENV_PARAMS.max_speed
 
         # --------------------------------------------------
-        # Helper: lane safety
+        # Safety check (current lane)
+        # --------------------------------------------------
+        safe_brake_dist = self.dist_required(d_front, rel_speed_front)
+        safe_brake_dist_left = self.dist_required(d_left_front, rel_speed_left_front)
+        safe_brake_dist_right = self.dist_required(d_right_front, rel_speed_right_front)
+
+        # --------------------------------------------------
+        # Helper: lane safety (WITH BRAKING MODEL)
         # --------------------------------------------------
         def left_safe():
             return (
                 lane_left_free and
-                d_left_front > self.safe_front_lane and
-                d_left_back > self.safe_back_lane
+                d_left_front > safe_brake_dist_left
             )
 
         def right_safe():
             return (
                 lane_right_free and
-                d_right_front > self.safe_front_lane and
-                d_right_back > self.safe_back_lane
+                d_right_front > safe_brake_dist_right
             )
 
         # --------------------------------------------------
-        # 1. CRITICAL → must react immediately
+        # 1. CRITICAL → cannot brake → MUST react
         # --------------------------------------------------
-        if d_front < self.critical_front:
+        if d_front < safe_brake_dist:
             if left_safe():
                 return 3  # LCL
             if right_safe():
                 return 4  # LCR
-            return 2  # DEC
+            return 2  # DEC and pray
 
         # --------------------------------------------------
-        # 2. CLOSE → try to overtake
+        # 2. CLOSE → approaching limit
         # --------------------------------------------------
-        if d_front < self.close_front:
-            if left_safe():
-                return 3  # LCL (preferred)
-            if right_safe():
-                return 4  # LCR
-            return 2  # DEC
+        if d_front < safe_brake_dist*3:
+            if left_safe() and d_left_front > safe_brake_dist_left*3:
+                return 3
+            if right_safe() and d_right_front > safe_brake_dist_right*3:
+                return 4
+            return 2
 
         # --------------------------------------------------
         # 3. FREE → go fast
         # --------------------------------------------------
-        if d_front > self.free_front:
-            return 1  # ACC
+        if d_front < safe_brake_dist*4:
+            return 0  # SS
 
-        # --------------------------------------------------
-        # 4. INTERMEDIATE → smooth behavior
-        # --------------------------------------------------
-        # not too close, not free → maintain or slight slow
-        return 0  # SS
+        return 1  # ACC
