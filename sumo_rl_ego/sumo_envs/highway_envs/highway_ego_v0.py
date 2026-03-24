@@ -2,6 +2,7 @@ from pathlib import Path
 from sumo_rl_ego.sumo_envs.registry import register_env
 import sumo_gym_ego as sge
 from typing import Literal
+from dataclasses import dataclass
 
 '''
 Scenario description:
@@ -10,7 +11,9 @@ the environment simulates a highway scenario in sumo, the highway has three lane
 the ego vehicle must reach the end of the highway without crashing, going offroad, or timing out.
 
 the ego at each iteration obtains an observation that includes:
-- its own speed and lane
+- its own speed 
+- the lane it is currently in
+- whether the lanes to the left and right are free for a lane change
 - the distance to the nearest vehicle in front and behind in the same lane
 - the distance to the nearest vehicle in front and behind in the left lane (if it exists)
 - the distance to the nearest vehicle in front and behind in the right lane (if it exists)
@@ -27,38 +30,35 @@ the reward function can be configured to prioritize different aspects of the tas
 '''
 
 
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent / "scenarios" 
 
 
-# simulation parameters
-time_step = 0.5
-max_simulation_time = 300
+@dataclass
+class ENV_PARAMS:
+    time_step: float = 0.5
+    max_simulation_time: int = 300
+    num_lanes: int = 3
 
-# maximum values for clipping and normalization
-max_speed = 50.0
-max_distance = 200.0
-max_ttc = 20.0
-check_distance = 10.0
+    max_speed: float = 50.0
+    max_distance: float = 200.0
+    max_ttc: float = 20.0
+    check_distance: float = 10.0
 
-# ego parameters
-acc_value = 2.0    # discrete ego
-dec_value = -2.0    # discrete ego
-lc_duration = 0.0   # both discrete and continuous ego
-max_acc = 2.0   # continuous ego
-max_dec = -2.0   # continuous ego
-lane_threshold = 0.9   # continuous ego
+    acc_value: float = 2.0
+    dec_value: float = -2.0
+    lc_duration: float = 0.0
+    max_acc: float = 2.0
+    max_dec: float = -2.0
+    lane_threshold: float = 0.9
 
-# reward weights
-step_penalty = -0.2
-w_arrived = 0.0
-w_crash = -10.0
-w_offroad = -10.0
-w_timeout = -10.0
-weights = [1.0, 1.0, 1.0]  # weights for the reward components (step_penalty, speed, terminal)
+    step_penalty: float = -0.2
+    w_arrived: float = 0.0
+    w_crash: float = -10.0
+    w_offroad: float = -10.0
+    w_timeout: float = -10.0
+    weights: list[float] = (1.0, 1.0, 1.0)
 
-
+    
 
 @register_env("HighwayEgo-v0")
 class HighwayEgo_v0(sge.SumoEnv):
@@ -75,15 +75,15 @@ class HighwayEgo_v0(sge.SumoEnv):
         config = sge.SumoConfig(
             use_gui=use_gui,
             ego_id="ego",
-            max_simulation_time=max_simulation_time,
-            time_step=time_step,
+            max_simulation_time=ENV_PARAMS.max_simulation_time,
+            time_step=ENV_PARAMS.time_step,
             seed=seed
         )
 
         obs_builder = sge.CompositeObservation([
-            sge.obs.EgoSpeedObs(max_speed=max_speed),
+            sge.obs.EgoSpeedObs(max_speed=ENV_PARAMS.max_speed),
             sge.obs.EgoLaneObs(),
-            sge.obs.LaneFreeObs(check_distance=check_distance),
+            sge.obs.LaneFreeObs(),
             sge.obs.NeighborObs(
                 neighbors=[
                     "same_front", "same_back",
@@ -91,36 +91,36 @@ class HighwayEgo_v0(sge.SumoEnv):
                     "right_front", "right_back",
                 ],
                 features=["distance", "rel_speed"],
-                max_speed=max_speed,
-                max_distance=max_distance,
-                max_ttc=max_ttc,
+                max_speed=ENV_PARAMS.max_speed,
+                max_distance=ENV_PARAMS.max_distance,
+                max_ttc=ENV_PARAMS.max_ttc,
             ),
         ])
 
         if reward == "fast":
             reward_function = sge.CompositeReward([
-                sge.reward.StepPenalty(penalty=step_penalty),
-                sge.reward.SpeedReward(max_speed=max_speed),
+                sge.reward.StepPenalty(penalty=ENV_PARAMS.step_penalty),
+                sge.reward.SpeedReward(max_speed=ENV_PARAMS.max_speed),
                 sge.reward.TerminalReward(
-                    w_crash=w_crash,
-                    w_offroad=w_offroad,
-                    w_arrived=w_arrived,
-                    w_timeout=w_timeout,)
+                    w_crash=ENV_PARAMS.w_crash,
+                    w_offroad=ENV_PARAMS.w_offroad,
+                    w_arrived=ENV_PARAMS.w_arrived,
+                    w_timeout=ENV_PARAMS.w_timeout,)
                 ],
-                weights=weights
+                weights=ENV_PARAMS.weights
             )
 
         if ego == "discrete":
             ego_controller = sge.ego.HighwayDiscreteEgo(
-                    acc_value=acc_value,
-                    dec_value=dec_value,
-                    lc_duration=lc_duration)
+                    acc_value=ENV_PARAMS.acc_value,
+                    dec_value=ENV_PARAMS.dec_value,
+                    lc_duration=ENV_PARAMS.lc_duration)
         elif ego == "continuous":
             ego_controller = sge.ego.HighwayContinuousEgo(
-                max_acc=max_acc,
-                max_dec=max_dec,
-                lc_duration=lc_duration,
-                lane_threshold=lane_threshold,
+                max_acc=ENV_PARAMS.max_acc,
+                max_dec=ENV_PARAMS.max_dec,
+                lc_duration=ENV_PARAMS.lc_duration,
+                lane_threshold=ENV_PARAMS.lane_threshold,
             )
 
         if metrics_tracker is None:

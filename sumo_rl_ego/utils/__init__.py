@@ -1,6 +1,6 @@
 from .episode_runner import run_episode
 from .policy_player import play_policy
-from .wandb_costum_callbacks import WandbCustomCallback
+from .custom_logging_callback import CustomLoggingCallback
 from .config_utils import (
     init_wandb, 
     confirm_cfg,
@@ -14,7 +14,7 @@ from .config_utils import (
 __all__ = [
     "run_episode",
     "play_policy",
-    "WandbCustomCallback",
+    "CustomLoggingCallback",
     "init_wandb",
     "confirm_cfg",
     "check_source_cfg",

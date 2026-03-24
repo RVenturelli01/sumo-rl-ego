@@ -7,7 +7,7 @@ from ..policies.factory import policy_from_model
 
 
 def run_episode(env, policy, seed=None):
-    obs = env.reset(seed=seed)
+    obs, _ = env.reset(seed=seed)
     policy.reset()
 
     terminated = False

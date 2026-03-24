@@ -10,7 +10,7 @@ from sumo_rl_ego.utils import (
     init_wandb, 
     confirm_cfg,
     save_outputs,
-    WandbCustomCallback,
+    CustomLoggingCallback,
 )
 
 ALGO_REGISTRY = {
@@ -62,7 +62,7 @@ def main(cfg: DictConfig) -> None:
 
         print("Starting training...\n")
         model.learn(
-            callback=WandbCustomCallback(window_size=cfg.learn.rolling_window),
+            callback=CustomLoggingCallback(window_size=cfg.learn.rolling_window),
             **cfg.learn.kwargs,
         )
 

@@ -1,7 +1,7 @@
 run:
-  name: "dqn_ft"
+  name: "dqn_v1_ft2"
   seed: 0
-  output_dir: ${oc.env:HOME}/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs
+  output_dir: /work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs
 
 
 wandb:
@@ -11,7 +11,8 @@ wandb:
     group: ${env.id}_${env.kwargs.ego}_${env.kwargs.reward}
     name: ${run.name}
     mode: "online"
-    dir: "/tmp/wandb"
+    dir: ${hydra:runtime.cwd}/wandb
+    sync_tensorboard: true
     notes: null
 
 source:
@@ -20,7 +21,7 @@ source:
 
 env:
   id: "HighwayEgo-v0"
-  n_envs: 1
+  n_envs: 16
   kwargs: 
     reward: "fast"
     ego: "discrete"
@@ -29,17 +30,17 @@ model:
   algo: "DQN"
   kwargs: {}
   overrides:
-    learning_starts: 0
-    exploration_fraction: 0.1
-    exploration_initial_eps: 0.05
-    exploration_final_eps: 0.005
+    exploration_initial_eps: 0.005
+    exploration_final_eps: 0.002
+    exploration_fraction: 0.5
+    learning_rate: 3e-5
 
 learn:
   rolling_window: 1000
   kwargs:
     total_timesteps: 1e6
     log_interval: 500
-    reset_num_timesteps: false
+    reset_num_timesteps: true
     progress_bar: true
 
 hydra:

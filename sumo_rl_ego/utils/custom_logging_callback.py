@@ -1,11 +1,10 @@
 import numpy as np
-import wandb
 from collections import deque
 from stable_baselines3.common.callbacks import BaseCallback
 
 
 
-class WandbCustomCallback(BaseCallback):
+class CustomLoggingCallback(BaseCallback):
 
     def __init__(self, window_size=100):
         super().__init__()
@@ -68,10 +67,8 @@ class WandbCustomCallback(BaseCallback):
     def _on_rollout_end(self) -> None:
         
         # --- log ---
-        log_dict = {}
         for k, v in self.buffer.items():
             if len(v) > 0:
-                log_dict[k] = np.mean(v)
+                self.logger.record(k, np.mean(v))
 
-        if wandb.run is not None:
-            wandb.log(log_dict)
+        # self.logger.dump(self.num_timesteps)
