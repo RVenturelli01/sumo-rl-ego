@@ -1,5 +1,6 @@
 import sumo_rl_ego as sre
 
+print("list of the available environments: ", sre.list_envs())
 print("list of the available policies: ", sre.list_policies())
 print("list of the available models: ", sre.list_models())
 
@@ -10,7 +11,7 @@ env = sre.make_env(
     ego="discrete",
     use_gui=False,
 )
-policy = sre.load_policy('FastPolicy-v0')
+policy = sre.load_policy('dqn_v0')
 
 info = sre.run_episode(env, policy, seed=0)
 print(info)

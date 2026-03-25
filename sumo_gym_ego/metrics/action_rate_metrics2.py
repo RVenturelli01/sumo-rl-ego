@@ -14,6 +14,7 @@ class ActionRateMetrics2(BaseMetricsTracker):
         self.max_acc = max_acc
         self.max_dec = max_dec
         self.lane_threshold = lane_threshold
+        self.step_count = 0
 
         self.reset()
 
@@ -23,6 +24,7 @@ class ActionRateMetrics2(BaseMetricsTracker):
         self.count_dec = 0
         self.count_lcl = 0
         self.count_lcr = 0
+        self.step_count = 0
 
 
     def compute_step_metrics(self, obs, action, next_obs, reward, info):
@@ -41,11 +43,12 @@ class ActionRateMetrics2(BaseMetricsTracker):
         elif lane_cmd < -self.lane_threshold:
             self.count_lcr += 1
 
+        self.step_count += 1
         return {}
 
     def compute_episode_metrics(self, obs, action, next_obs, reward, info):
 
-        step_count = info.get("step", 0)
+        step_count = self.step_count
 
         return {
             "action_rate/ss": self.count_ss / step_count if step_count > 0 else 0.0,

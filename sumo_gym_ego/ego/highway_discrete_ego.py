@@ -26,7 +26,6 @@ class HighwayDiscreteEgo(BaseEgoController):
 
 
     def apply_action(self, action):
-        
         time_step = self.sim.config.time_step
         speed = self.sim.vehicle.getSpeed(self.ego_id)
 

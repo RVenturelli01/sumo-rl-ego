@@ -1,4 +1,5 @@
 from sumo_gym_ego import BaseRewardFunction
+from sumo_gym_ego import EgoStatus
 
 
 class TerminalReward(BaseRewardFunction):
@@ -21,16 +22,16 @@ class TerminalReward(BaseRewardFunction):
 
     def compute_terminal(self, obs, action, next_obs, info):
 
-        if info["event"] == "collided":
+        if info["ego_status"] == EgoStatus.COLLIDED.value:
             return self.w_crash
         
-        if info["event"] == "timeout":
+        if info["ego_status"] == EgoStatus.TIMEOUT.value:
             return self.w_timeout
 
-        if info["event"] == "off_road":
+        if info["ego_status"] == EgoStatus.OFF_ROAD.value:
             return self.w_offroad
 
-        if info["event"] == "arrived":
+        if info["ego_status"] == EgoStatus.ARRIVED.value:
             return self.w_arrived
 
         return 0.0

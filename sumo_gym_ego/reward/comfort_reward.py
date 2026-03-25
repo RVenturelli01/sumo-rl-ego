@@ -9,27 +9,29 @@ class ComfortReward(BaseRewardFunction):
 
         self.w_acc = w_acc
         self.w_jerk = w_jerk
-        self.time_step = self.config.time_step
 
         self.v_prev = None
         self.a_prev = None
 
     def compute(self, obs, action, next_obs, info):
+        time_step = self.config.time_step
 
         v = self.sim.vehicle.getSpeed(self.ego_id)
 
         reward = 0.0
 
         if self.v_prev is not None:
-            a = (v - self.v_prev) / self.time_step
+            a = (v - self.v_prev) / time_step
             reward -= self.w_acc * abs(a) / self.max_acc
 
         if self.a_prev is not None:
             jerk = (a - self.a_prev) / (2 * self.max_acc)  
             reward -= self.w_jerk * abs(jerk) 
 
+        if self.v_prev is not None:
+            self.a_prev = a
+            
         self.v_prev = v
-        self.a_prev = a
 
         return reward
 

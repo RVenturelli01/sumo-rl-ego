@@ -6,7 +6,7 @@ from .policies.factory import load_policy
 from .policies.registry import list_policies, list_models
 from .utils.episode_runner import run_episode
 from .utils.policy_player import play_policy
-
+from . import utils
 
 __all__ = [
     "make_env",

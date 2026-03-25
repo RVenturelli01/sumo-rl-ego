@@ -13,6 +13,7 @@ class ActionRateMetrics(BaseMetricsTracker):
         self.count_dec = 0
         self.count_lcl = 0
         self.count_lcr = 0
+        self.step_count = 0
 
 
     def compute_step_metrics(self, obs, action, next_obs, reward, info):
@@ -22,11 +23,12 @@ class ActionRateMetrics(BaseMetricsTracker):
         self.count_lcl += action == DiscreteActions.LCL
         self.count_lcr += action == DiscreteActions.LCR
 
+        self.step_count += 1
         return {}
 
     def compute_episode_metrics(self, obs, action, next_obs, reward, info):
 
-        step_count = info.get("step", 0)
+        step_count = self.step_count
 
         return {
             "action_rate/ss": self.count_ss / step_count if step_count > 0 else 0.0,

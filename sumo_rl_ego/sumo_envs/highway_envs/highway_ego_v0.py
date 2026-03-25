@@ -114,45 +114,46 @@ class HighwayEgo_v0(sge.SumoEnv):
         ])
 
 
+        reward_fast = sge.CompositeReward([
+            sge.reward.StepPenalty(
+                penalty=ENV_PARAMS.w_step
+            ),
+            sge.reward.HighSpeedReward(
+                max_speed=ENV_PARAMS.max_speed, 
+                weight=ENV_PARAMS.w_fast_speed
+            ),
+            sge.reward.TerminalReward(
+                w_crash=ENV_PARAMS.w_crash,
+                w_offroad=ENV_PARAMS.w_offroad,
+                w_arrived=ENV_PARAMS.w_arrived,
+                w_timeout=ENV_PARAMS.w_timeout,)
+        ])
+
+        reward_comfort = sge.CompositeReward([
+            sge.reward.TargetSpeedReward(
+                target_speed=ENV_PARAMS.target_speed, 
+                weight=ENV_PARAMS.w_target_speed
+            ),
+            sge.reward.ComfortReward(
+                max_acc=ENV_PARAMS.max_acc,
+                max_dec=ENV_PARAMS.max_dec,
+                w_acc=ENV_PARAMS.w_acc,
+                w_jerk=ENV_PARAMS.w_jerk,
+            ),
+            sge.reward.TerminalReward(
+                w_crash=ENV_PARAMS.w_crash,
+                w_offroad=ENV_PARAMS.w_offroad,
+                w_arrived=ENV_PARAMS.w_arrived,
+                w_timeout=ENV_PARAMS.w_timeout,
+            )
+        ])
 
 
         if reward == "fast":
-            reward_function = sge.CompositeReward([
-                sge.reward.StepPenalty(
-                    penalty=ENV_PARAMS.w_step
-                ),
-                sge.reward.HighSpeedReward(
-                    max_speed=ENV_PARAMS.max_speed, 
-                    weight=ENV_PARAMS.w_fast_speed
-                ),
-                sge.reward.TerminalReward(
-                    w_crash=ENV_PARAMS.w_crash,
-                    w_offroad=ENV_PARAMS.w_offroad,
-                    w_arrived=ENV_PARAMS.w_arrived,
-                    w_timeout=ENV_PARAMS.w_timeout,)
-            ])
-
+            reward_function = reward_fast
         elif reward == "comfort":
-            reward_function = sge.CompositeReward([
-                sge.reward.TargetSpeedReward(
-                    target_speed=ENV_PARAMS.target_speed, 
-                    weight=ENV_PARAMS.w_target_speed
-                ),
-                sge.reward.ComfortReward(
-                    max_acc=ENV_PARAMS.max_acc,
-                    max_dec=ENV_PARAMS.max_dec,
-                    w_acc=ENV_PARAMS.w_acc,
-                    w_jerk=ENV_PARAMS.w_jerk,
-                ),
-                sge.reward.TerminalReward(
-                    w_crash=ENV_PARAMS.w_crash,
-                    w_offroad=ENV_PARAMS.w_offroad,
-                    w_arrived=ENV_PARAMS.w_arrived,
-                    w_timeout=ENV_PARAMS.w_timeout,
-                )
-            ])
+            reward_function = reward_comfort
             
-
 
 
         if ego == "discrete":
@@ -174,17 +175,21 @@ class HighwayEgo_v0(sge.SumoEnv):
         if metrics_tracker is None:
             if ego == "discrete":
                 metrics_tracker = sge.CompositeMetricsTracker([
-                    sge.metrics.PerformanceMetrics(),
+                    sge.metrics.AvgSpeedMetrics(),
                     sge.metrics.ActionRateMetrics(),
+                    sge.metrics.Reward2Metrics(reward_function=reward_fast, reward_name="ep_fast_return"),
+                    sge.metrics.Reward2Metrics(reward_function=reward_comfort, reward_name="ep_comfort_return"),
                 ])
             elif ego == "continuous":
                 metrics_tracker = sge.CompositeMetricsTracker([
-                    sge.metrics.PerformanceMetrics(),
+                    sge.metrics.AvgSpeedMetrics(),
                     sge.metrics.ActionRateMetrics2(
                         max_acc=ENV_PARAMS.max_acc,
                         max_dec=ENV_PARAMS.max_dec,
                         lane_threshold=ENV_PARAMS.lane_threshold,
                     ),
+                    sge.metrics.Reward2Metrics(reward_function=reward_fast, reward_name="ep_fast_return"),
+                    sge.metrics.Reward2Metrics(reward_function=reward_comfort, reward_name="ep_comfort_return"),
                 ])
 
 

@@ -1,6 +1,7 @@
 from .episode_runner import run_episode
 from .policy_player import play_policy
 from .custom_logging_callback import CustomLoggingCallback
+from .wandb_utils import log_histogram, log_bar_plot
 from .config_utils import (
     init_wandb, 
     confirm_cfg,
@@ -21,4 +22,6 @@ __all__ = [
     "load_policy_from_cfg",
     "resolve_paths",
     "save_outputs",
+    "log_histogram",
+    "log_bar_plot",
 ]

@@ -81,11 +81,7 @@ class SumoEnv(gym.Env):
         
         # inconsistent env: ego missing before action
         if not self.sim.ego_exists(self.ego_id):
-            warnings.warn(
-                "Ego vehicle missing before step. Did you forget to call reset()?",
-                RuntimeWarning,)
-            info = {"event": "ego_missing_before_step"}
-            return self.last_obs, 0.0, True, False, info
+            return self._handle_missing_ego()
 
         self.ego_controller.apply_action(action)
 
@@ -94,27 +90,25 @@ class SumoEnv(gym.Env):
 
         ego_status = self.sim.get_ego_status(self.ego_id)
 
-        terminated, truncated, event = self._compute_termination(ego_status)
+        terminated, truncated, ego_status = self._compute_termination(ego_status)
 
         info = {
             "step": self.step_count,
-            "time": self.step_count*self.config.time_step,
-            "event": event,
+            "sim_time": self.step_count*self.config.time_step,
+            "ego_status": ego_status.value,
         }
+
+        info["metrics"] = {"step": {}, "episode": {}}
 
         if terminated or truncated:
             obs = self.last_obs
             reward = self.reward_function.compute_terminal(self.last_obs, action, obs, info)
+            info["metrics"]["episode"] = self.metrics_tracker.compute_episode_metrics(self.last_obs, action, obs, reward, info)
         else:
             obs = self.obs_builder.build_obs()
             reward = self.reward_function.compute(self.last_obs, action, obs, info)
+            info["metrics"]["step"] = self.metrics_tracker.compute_step_metrics(self.last_obs, action, obs, reward, info)
 
-        info["metrics"] = {}
-        info["metrics"]["step"] = self.metrics_tracker.compute_step_metrics(self.last_obs, action, obs, reward, info)
-
-        if terminated or truncated:
-            info["metrics"]["episode"] = self.metrics_tracker.compute_episode_metrics(self.last_obs, action, obs, reward, info)
-            
         self.last_obs = obs
         return obs, reward, terminated, truncated, info
 
@@ -123,16 +117,23 @@ class SumoEnv(gym.Env):
         terminated = ego_status != EgoStatus.RUNNING
         truncated = self.step_count >= self.config.max_steps and not terminated
 
-        if terminated:
-            event = ego_status.value
-        elif truncated:
-            event = "timeout"
-        else:
-            event = "running"
+        if truncated:
+            ego_status = EgoStatus.TIMEOUT
 
-        return terminated, truncated, event
+        return terminated, truncated, ego_status
 
 
+
+    def _handle_missing_ego(self):
+            warnings.warn("Ego vehicle missing before step. Did you forget to call reset()?", RuntimeWarning,)
+            info = {
+                "step": self.step_count,
+                "sim_time": self.step_count*self.config.time_step,
+                "ego_status": EgoStatus.REMOVED_UNKNOWN.value,
+                "metrics": {"step": {}, "episode": {}},
+            }
+            return self.last_obs, 0.0, True, False, info
+    
     def close(self):
         self.sim.close()
         print("\nEnvironment closed.")
