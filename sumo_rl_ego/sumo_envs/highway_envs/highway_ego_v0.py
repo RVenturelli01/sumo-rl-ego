@@ -23,7 +23,7 @@ the ego can either have:
 - continuous action space (acceleration and lane change commands).
 
 the reward function can be configured to prioritize different aspects of the task
-- speed
+- fast
 - safety
 - comfort 
 
@@ -35,42 +35,56 @@ BASE_DIR = Path(__file__).resolve().parent.parent / "scenarios"
 
 @dataclass
 class ENV_PARAMS:
+    # environment parameters
     time_step: float = 0.5
     max_simulation_time: int = 300
     num_lanes: int = 3
 
+    # observation parameters
     max_speed: float = 50.0
     max_distance: float = 200.0
     max_ttc: float = 20.0
     check_distance: float = 10.0
 
+    # common ego parameters
+    lc_duration: float = 0.0
+    # discrete ego parameters
     acc_value: float = 2.0
     dec_value: float = -2.0
-    lc_duration: float = 0.0
+    # continuous ego parameters
     max_acc: float = 2.0
     max_dec: float = -2.0
     lane_threshold: float = 0.9
 
-    w_penalty: float = -0.2
-    w_speed: float = 1.0
+    # common reward weights
     w_arrived: float = 0.0
     w_crash: float = -10.0
     w_offroad: float = -10.0
     w_timeout: float = -10.0
+    # fast reward weights
+    w_step: float = -0.2
+    w_fast_speed: float = 1.0
+    # comfort reward weights
+    w_target_speed: float = 1.0
+    w_acc: float = 1.0
+    w_jerk: float = 1.0
+    target_speed: float = 20.0
 
-    
+
+
 
 @register_env("HighwayEgo-v0")
 class HighwayEgo_v0(sge.SumoEnv):
     def __init__(self, 
-                 reward: Literal["fast", "safe", "comfort"] = "fast",
-                 ego: Literal["discrete", "continuous"] = "discrete",
-                 metrics_tracker = None,
-                 use_gui=False, 
-                 seed=0,
-                 ):
+            reward: Literal["fast", "safe", "comfort"] = "fast",
+            ego: Literal["discrete", "continuous"] = "discrete",
+            metrics_tracker = None,
+            use_gui=False, 
+            seed=0,
+        ):
         
         sumocfg_files = [str(BASE_DIR / "highway_fast_modified/highway.sumocfg")]
+
 
         config = sge.SumoConfig(
             use_gui=use_gui,
@@ -79,6 +93,8 @@ class HighwayEgo_v0(sge.SumoEnv):
             time_step=ENV_PARAMS.time_step,
             seed=seed
         )
+
+
 
         obs_builder = sge.CompositeObservation([
             sge.obs.EgoSpeedObs(max_speed=ENV_PARAMS.max_speed),
@@ -97,23 +113,54 @@ class HighwayEgo_v0(sge.SumoEnv):
             ),
         ])
 
+
+
+
         if reward == "fast":
             reward_function = sge.CompositeReward([
-                sge.reward.StepPenalty(penalty=ENV_PARAMS.w_penalty),
-                sge.reward.SpeedReward(max_speed=ENV_PARAMS.max_speed, weight=ENV_PARAMS.w_speed),
+                sge.reward.StepPenalty(
+                    penalty=ENV_PARAMS.w_step
+                ),
+                sge.reward.HighSpeedReward(
+                    max_speed=ENV_PARAMS.max_speed, 
+                    weight=ENV_PARAMS.w_fast_speed
+                ),
                 sge.reward.TerminalReward(
                     w_crash=ENV_PARAMS.w_crash,
                     w_offroad=ENV_PARAMS.w_offroad,
                     w_arrived=ENV_PARAMS.w_arrived,
                     w_timeout=ENV_PARAMS.w_timeout,)
-                ]
-            )
+            ])
+
+        elif reward == "comfort":
+            reward_function = sge.CompositeReward([
+                sge.reward.TargetSpeedReward(
+                    target_speed=ENV_PARAMS.target_speed, 
+                    weight=ENV_PARAMS.w_target_speed
+                ),
+                sge.reward.ComfortReward(
+                    max_acc=ENV_PARAMS.max_acc,
+                    max_dec=ENV_PARAMS.max_dec,
+                    w_acc=ENV_PARAMS.w_acc,
+                    w_jerk=ENV_PARAMS.w_jerk,
+                ),
+                sge.reward.TerminalReward(
+                    w_crash=ENV_PARAMS.w_crash,
+                    w_offroad=ENV_PARAMS.w_offroad,
+                    w_arrived=ENV_PARAMS.w_arrived,
+                    w_timeout=ENV_PARAMS.w_timeout,
+                )
+            ])
+            
+
+
 
         if ego == "discrete":
             ego_controller = sge.ego.HighwayDiscreteEgo(
                     acc_value=ENV_PARAMS.acc_value,
                     dec_value=ENV_PARAMS.dec_value,
                     lc_duration=ENV_PARAMS.lc_duration)
+            
         elif ego == "continuous":
             ego_controller = sge.ego.HighwayContinuousEgo(
                 max_acc=ENV_PARAMS.max_acc,
@@ -121,6 +168,8 @@ class HighwayEgo_v0(sge.SumoEnv):
                 lc_duration=ENV_PARAMS.lc_duration,
                 lane_threshold=ENV_PARAMS.lane_threshold,
             )
+
+
 
         if metrics_tracker is None:
             if ego == "discrete":
@@ -137,6 +186,8 @@ class HighwayEgo_v0(sge.SumoEnv):
                         lane_threshold=ENV_PARAMS.lane_threshold,
                     ),
                 ])
+
+
 
         super().__init__(
             sumocfg_files=sumocfg_files,
