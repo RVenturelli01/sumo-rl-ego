@@ -48,6 +48,8 @@ runs/
 
 # Editor / IDE metadata
 .idea/
+launcher.sh
+
 *.iml
 .vscode/
 
