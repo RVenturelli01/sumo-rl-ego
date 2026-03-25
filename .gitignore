@@ -1,25 +1,55 @@
-# Python packaging
-*.egg-info/
-dist/
-build/
-
-# Byte-compiled
+# Python bytecode
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 
-# Virtual environment
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments / local environment files
 .venv/
 venv/
-
-dqn_sumo_agent.zip
-tensorboard_dqn/DQN*
-.vscode/settings.json
-
-# RL artifacts
-outputs/
-*.pth
-*.pt
+env/
+ENV/
+.python-version
 .env
-wandb/
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+launcher.sh
 
+# Test, coverage, and type-checker caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+.mypy_cache/
+.nox/
+.pyre/
+.ruff_cache/
+.tox/
+coverage.xml
+
+# Notebook caches
+.ipynb_checkpoints/
+
+# Experiment outputs
+outputs/
+multirun/
+wandb/
+tensorboard/
+runs/
+
+# Editor / IDE metadata
 .idea/
+*.iml
+.vscode/
+
+# OS metadata
+.DS_Store
