@@ -1,7 +1,7 @@
 run:
   name: "dqn_v2"
   seed: 0
-  output_dir: /work/fis1/sumo-human-feedback-rl/sumo-rl-ego/outputs
+  output_dir: null
 
 
 wandb:
@@ -11,7 +11,7 @@ wandb:
     group: ${env.id}_${env.kwargs.ego}_${env.kwargs.reward}
     name: ${run.name}
     mode: "online"
-    dir: ${run.output_dir}/wandb
+    dir: ${hydra:runtime.cwd}/wandb
     sync_tensorboard: true
     notes: null
 
@@ -49,7 +49,7 @@ model:
     verbose: 1
     seed: ${run.seed}
     device: "cpu"
-    tensorboard_log: tensorboard
+    tensorboard_log: ${hydra:runtime.cwd}/tensorboard
 
 learn:
   rolling_window: 1000

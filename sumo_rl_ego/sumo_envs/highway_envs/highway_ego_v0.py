@@ -51,12 +51,12 @@ class ENV_PARAMS:
     max_dec: float = -2.0
     lane_threshold: float = 0.9
 
-    step_penalty: float = -0.2
+    w_penalty: float = -0.2
+    w_speed: float = 1.0
     w_arrived: float = 0.0
     w_crash: float = -10.0
     w_offroad: float = -10.0
     w_timeout: float = -10.0
-    weights: list[float] = (1.0, 1.0, 1.0)
 
     
 
@@ -99,15 +99,14 @@ class HighwayEgo_v0(sge.SumoEnv):
 
         if reward == "fast":
             reward_function = sge.CompositeReward([
-                sge.reward.StepPenalty(penalty=ENV_PARAMS.step_penalty),
-                sge.reward.SpeedReward(max_speed=ENV_PARAMS.max_speed),
+                sge.reward.StepPenalty(penalty=ENV_PARAMS.w_penalty),
+                sge.reward.SpeedReward(max_speed=ENV_PARAMS.max_speed, weight=ENV_PARAMS.w_speed),
                 sge.reward.TerminalReward(
                     w_crash=ENV_PARAMS.w_crash,
                     w_offroad=ENV_PARAMS.w_offroad,
                     w_arrived=ENV_PARAMS.w_arrived,
                     w_timeout=ENV_PARAMS.w_timeout,)
-                ],
-                weights=ENV_PARAMS.weights
+                ]
             )
 
         if ego == "discrete":

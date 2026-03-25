@@ -20,7 +20,7 @@ wandb:
     group: ${env.id}_${env.kwargs.reward}
     name: ${run.name}
     mode: "online"
-    dir: ${run.output_dir}/wandb
+    dir: ${hydra:runtime.cwd}/wandb
     notes: null
 
 
