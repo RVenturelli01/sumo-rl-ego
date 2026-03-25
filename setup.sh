@@ -1,42 +1,23 @@
-#!/usr/bin/env bash
+# Exit on error (-e), undefined variable (-u), and failed pipe (-o pipefail)
+set -euo pipefail           
 
-set -euo pipefail
+# Create the virtual environment if it doesn't exist
+python3 -m venv .venv
 
-MODE="${1:---full}"
-VENV_DIR=".venv"
+# Activate the virtual environment
+source ".venv/bin/activate" 
 
-case "$MODE" in
-  --minimal)
-    INSTALL_TARGET="."
-    ;;
-  --full)
-    INSTALL_TARGET=".[experiments,dev]"
-    ;;
-  *)
-    echo "Usage: ./setup.sh [--minimal|--full]"
-    exit 1
-    ;;
-esac
+# Upgrade pip to the latest version
+pip install --upgrade pip   
 
-if [ ! -d "$VENV_DIR" ]; then
-  python3 -m venv "$VENV_DIR"
-fi
+# Install dependencies from requirements.txt (if present)
+pip install -r requirements.txt  
 
-# shellcheck disable=SC1091
-source "$VENV_DIR/bin/activate"
+# Install the current project in editable mode
+pip install -e .            
 
-python -m pip install --upgrade pip setuptools wheel
-python -m pip install -e "$INSTALL_TARGET"
+# Check if 'sumo' is in PATH, warn if not
+command -v sumo >/dev/null || echo "Warning: SUMO not found"  
 
-if command -v sumo >/dev/null 2>&1; then
-  echo "SUMO binary found: $(command -v sumo)"
-else
-  echo "Warning: 'sumo' was not found on PATH."
-  echo "Install SUMO and make sure 'sumo' is available before running the environments."
-fi
-
-echo
-echo "Setup complete."
-echo "Activate the environment with: source $VENV_DIR/bin/activate"
-echo "Minimal package smoke test:"
-echo "  python -c \"import sumo_rl_ego as sre; print(sre.list_envs())\""
+# Print final instruction message
+echo "Done. Activate with: source .venv/bin/activate"        
