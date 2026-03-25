@@ -74,14 +74,8 @@ class EvalMetrics:
             else:
                 print(f"{name}: {mean:.3f}")
 
+
     def log_metrics(self, run):
-        # log vertical histogram of events (one column per event type)
-        # log vertical bar histogram of returns
-        # log horizontal bar histogram of time
-        # log horizontal bar histogram of avg_speed
-        # log returns vs episodes scatter plot
-        # log avg_speed vs episodes scatter plot
-        # log time vs episodes scatter plot
 
         log_histogram(
             data=self.data["performance/duration"],
@@ -98,42 +92,20 @@ class EvalMetrics:
             value="avg_speed",
             title="Average Speed Distribution")
         
-        log_bar_histogram(
+        log_bar_plot(
             data=[
                 ["collisions", np.mean(self.data["event_rate/collisions"])],
                 ["off_road", np.mean(self.data["event_rate/off_road"])],
                 ["timeouts", np.mean(self.data["event_rate/timeouts"])],
                 ["successes", np.mean(self.data["event_rate/successes"])],
             ],
+            value="rate",
             title="Event Rates",
-            x_label="Event",
-            y_label="Rate"
         )
-
-
-# def log_histogram(data, title, x_label, n_bins=10):
-#     y_label = "Frequency"
-
-#     # compute histogram
-#     counts, edges = np.histogram(data, bins=n_bins)
-
-#     # build bar data
-#     bar_data = []
-#     for i in range(len(counts)):
-#         label = (edges[i] + edges[i+1]) / 2
-#         bar_data.append([label, int(counts[i])])
-
-#     log_bar_histogram(
-#         data=bar_data,
-#         title=title,
-#         x_label=x_label,
-#         y_label=y_label
-#     )
 
 
 def log_histogram(data, value, title):
     data=[[i, float(v)] for i, v in enumerate(data)]
-    print(data)
 
     table = wandb.Table(
         data=data,
@@ -149,15 +121,22 @@ def log_histogram(data, value, title):
     wandb.log({title: histogram})
     
 
-def log_bar_histogram(data, title, x_label, y_label):
+def log_bar_plot(data, value, title):
+    
     table = wandb.Table(
         data=data,
-        columns=[x_label, y_label]
+        columns=["class", value],
     )
 
-    wandb.log({
-        title: wandb.plot.bar(table, x_label, y_label)
-    })
+    bar_plot = wandb.plot.bar(
+        table,
+        label="class",        
+        value=value,   
+        title=title,
+    )
+
+    print(f"Logging bar plot: {title}")
+    wandb.log({title: bar_plot})
 
 
 def print_eval_cfg(cfg):

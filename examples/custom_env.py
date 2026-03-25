@@ -18,7 +18,7 @@ env = sge.SumoEnv(
         sge.reward.SpeedReward(max_speed=50.0),
     ]),
     metrics_tracker=sge.CompositeMetricsTracker([
-        sge.metrics.EgoFeatureMetrics(window=100),
+        sge.metrics.PerformanceMetrics(),
     ]),
 )
 

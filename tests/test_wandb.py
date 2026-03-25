@@ -1,25 +1,27 @@
-import math
+
 import random
 import wandb
 
+# Generate random data for the table
+data = [
+    ["car", random.uniform(0, 1)],
+    ["bus", random.uniform(0, 1)],
+    ["road", random.uniform(0, 1)],
+    ["person", random.uniform(0, 1)],
+]
 
-def log_histogram(data, title):
-    table = wandb.Table(
-        data=data,
-        columns=["x", "y"],
+# Create a table with the data
+table = wandb.Table(data=data, columns=["class", "accuracy"])
+
+# Initialize a W&B run and log the bar plot
+with wandb.init(project="bar_chart") as run:
+    # Create a bar plot from the table
+    bar_plot = wandb.plot.bar(
+        table=table,
+        label="class",
+        value="accuracy",
+        title="Object Classification Accuracy",
     )
-    histogram = wandb.plot.histogram(
-        table,
-        value="y",
-        title=title,
-    )
 
-    wandb.log({title: histogram})
-    
-
-    
-wandb.init()
-
-data = [[i, random.random() + math.sin(i / 10)] for i in range(100)]
-
-log_histogram(data, "My Histogram")
+    # Log the bar chart to W&B
+    run.log({"bar_plot": bar_plot})
