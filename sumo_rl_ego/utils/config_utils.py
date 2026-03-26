@@ -119,7 +119,7 @@ def load_policy_from_cfg(cfg: DictConfig, env=None) -> DictConfig:
             env=env,
             device="cpu",
         )
-        return sre.policy_from_model(model)
+        return sre.ModelPolicy(model)
     
     if cfg.source.model_id is not None:
         return sre.load_policy(cfg.source.model_id, env=env)

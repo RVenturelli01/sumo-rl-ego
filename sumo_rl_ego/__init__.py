@@ -4,6 +4,7 @@ from .sumo_envs.registry import list_envs
 from .policies.base_policy import Policy
 from .policies.factory import load_policy
 from .policies.registry import list_policies, list_models
+from .policies.model_policy import ModelPolicy
 from .utils.episode_runner import run_episode
 from .utils.policy_player import play_policy
 from . import utils
@@ -18,4 +19,6 @@ __all__ = [
     "list_models",
     "run_episode",
     "play_policy",
+    "ModelPolicy",
+    "utils",
 ]
