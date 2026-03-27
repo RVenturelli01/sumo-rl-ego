@@ -52,11 +52,8 @@ def load_cfg_from_model_path(model_path):
     model_path = Path(model_path)
     model_dir = model_path.parent
 
-    hydra_cfg = model_dir / ".hydra" / "config.yaml"
     plain_cfg = model_dir / "config.yaml"
 
-    if hydra_cfg.exists():
-        return OmegaConf.load(hydra_cfg)
     if plain_cfg.exists():
         return OmegaConf.load(plain_cfg)
 
