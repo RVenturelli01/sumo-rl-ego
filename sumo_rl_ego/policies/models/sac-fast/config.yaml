@@ -1,0 +1,60 @@
+run:
+  name: sac_v0
+  seed: 0
+  output_dir: /home/ricca/projects/sumo-human-feedback-rl/sumo-rl-ego/outputs
+wandb:
+  enabled: true
+  kwargs:
+    project: sre-train
+    group: HighwayEgo-v0_continuous_fast
+    name: sac_v0
+    mode: online
+    dir: /home/ricca/projects/sumo-human-feedback-rl/sumo-rl-ego/wandb
+    sync_tensorboard: true
+    notes: null
+env:
+  id: HighwayEgo-v0
+  n_envs: 16
+  kwargs:
+    reward: fast
+    ego: continuous
+model:
+  algo: SAC
+  kwargs:
+    policy: MlpPolicy
+    learning_rate: 0.0003
+    buffer_size: 1000000
+    learning_starts: 100
+    batch_size: 256
+    tau: 0.005
+    gamma: 0.99
+    train_freq: 1
+    gradient_steps: 1
+    action_noise: null
+    replay_buffer_class: null
+    replay_buffer_kwargs: null
+    optimize_memory_usage: false
+    n_steps: 1
+    ent_coef: auto
+    target_update_interval: 1
+    target_entropy: auto
+    use_sde: false
+    sde_sample_freq: -1
+    use_sde_at_warmup: false
+    stats_window_size: 100
+    policy_kwargs:
+      net_arch:
+      - 256
+      - 128
+      use_sde: false
+    seed: 0
+    device: cpu
+    tensorboard_log: /home/ricca/projects/sumo-human-feedback-rl/sumo-rl-ego/tensorboard
+    verbose: 1
+learn:
+  rolling_window: 1000
+  kwargs:
+    total_timesteps: 2000000.0
+    log_interval: 100
+    reset_num_timesteps: false
+    progress_bar: true

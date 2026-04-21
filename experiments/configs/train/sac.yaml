@@ -1,0 +1,77 @@
+run:
+  name: "sac_v0"
+  seed: 0
+  output_dir: null
+
+
+wandb:
+  enabled: true
+  kwargs:
+    project: "sre-train"
+    group: ${env.id}_${env.kwargs.ego}_${env.kwargs.reward}
+    name: ${run.name}
+    mode: "online"
+    dir: ${hydra:runtime.cwd}/wandb
+    sync_tensorboard: true
+    notes: null
+
+env:
+  id: "HighwayEgo-v0"
+  n_envs: 16
+  kwargs:
+    reward: "fast"
+    ego: "continuous"
+
+
+model:
+  algo: "SAC"
+  kwargs:
+    policy: MlpPolicy  # Union[str, type[SACPolicy]],
+    learning_rate: 3e-4  # Union[float, Schedule] = 3e-4,
+    buffer_size: 1000000  # int = 1_000_000,  # 1e6
+    learning_starts: 100  # int = 100,
+    batch_size: 256  # int = 256,
+    tau: 0.005  # float = 0.005,
+    gamma: 0.99  # float = 0.99,
+    train_freq: 1  # Union[int, tuple[int, str]] = 1,
+    gradient_steps: 1  # int = 1,
+    action_noise: null  # Optional[ActionNoise] = None,
+    replay_buffer_class: null  # Optional[type[ReplayBuffer]] = None,
+    replay_buffer_kwargs: null  # Optional[dict[str, Any]] = None,
+    optimize_memory_usage: False  # bool = False,
+    n_steps: 1  # int = 1,
+    ent_coef: auto  # Union[str, float] = "auto",
+    target_update_interval: 1  # int = 1,
+    target_entropy: auto  # Union[str, float] = "auto",
+    use_sde: False  # bool = False,
+    sde_sample_freq: -1  # int = -1,
+    use_sde_at_warmup: False  # bool = False,
+    stats_window_size: 100  # int = 100,
+    policy_kwargs:  # Optional[dict[str, Any]] = None,
+      net_arch: 
+        - 256
+        - 128  
+      use_sde: False  # bool = False,
+    seed: ${run.seed}
+    device: "cpu"
+    tensorboard_log: ${hydra:runtime.cwd}/tensorboard
+    verbose: 1
+
+
+
+learn:
+  rolling_window: 1000
+  kwargs:
+    total_timesteps: 2e6
+    log_interval: 100  # every rollout make a log (rollout = n_steps * n_envs)
+    reset_num_timesteps: false
+    progress_bar: true
+
+
+hydra:
+  job:
+    chdir: true
+  run:
+    dir: ${run.output_dir}/train/${now:%Y-%m-%d}_${now:%H-%M-%S}_${run.name}
+
+

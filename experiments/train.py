@@ -54,15 +54,16 @@ def main(cfg: DictConfig) -> None:
         )
 
         print("Initializing model...")
+        model_kwargs = OmegaConf.to_container(cfg.model.kwargs, resolve=True)
         algo_cls = ALGO_REGISTRY[cfg.model.algo]
         model = algo_cls(
             env=env, 
-            **cfg.model.kwargs
+            **model_kwargs
         )
 
         print("Starting training...\n")
         model.learn(
-            callback=CustomLoggingCallback(window_size=cfg.learn.rolling_window),
+            callback=CustomLoggingCallback(),
             **cfg.learn.kwargs,
         )
 

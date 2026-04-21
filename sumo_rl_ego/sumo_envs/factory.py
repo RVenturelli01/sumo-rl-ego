@@ -1,4 +1,4 @@
-from stable_baselines3.common.vec_env import SubprocVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from .registry import ENV_REGISTRY
 
 
@@ -23,6 +23,7 @@ def make_vec_env(env_id: str, n_envs: int, base_seed: int = 0, **kwargs):
             return env
         return _init
 
-    env = SubprocVecEnv([make_thunk(i) for i in range(n_envs)])
+    vec_env_cls = DummyVecEnv if n_envs == 1 else SubprocVecEnv
+    env = vec_env_cls([make_thunk(i) for i in range(n_envs)])
 
     return env
