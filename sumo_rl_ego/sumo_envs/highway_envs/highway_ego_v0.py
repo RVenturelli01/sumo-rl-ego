@@ -37,7 +37,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent / "scenarios"
 class ENV_PARAMS:
     # environment parameters
     time_step: float = 0.5
-    max_simulation_time: int = 300
+    max_simulation_time: int = 200
     num_lanes: int = 3
 
     # observation parameters
@@ -57,12 +57,12 @@ class ENV_PARAMS:
     lane_threshold: float = 0.9
 
     # common reward weights
-    w_arrived: float = 0.0
-    w_crash: float = -10.0
-    w_offroad: float = -10.0
-    w_timeout: float = -10.0
+    w_arrived: float = 200.0
+    w_crash: float = -150.0
+    w_offroad: float = -150.0
+    w_timeout: float = 0.0
     # fast reward weights
-    w_step: float = -0.2
+    w_step: float = -0.5
     w_fast_speed: float = 1.0
     # comfort reward weights
     w_target_speed: float = 1.0
