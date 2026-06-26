@@ -5,15 +5,19 @@ built on [SUMO](https://sumo.dlr.de) — the open-source microscopic traffic sim
 
 ---
 
-<video src="assets/highway_video.mp4" controls autoplay loop width="100%"></video>
+<video src="https://github.com/user-attachments/assets/d261b6f3-9058-4ce7-bd32-125d60cd6d30" controls autoplay loop width="100%"></video>
 
 ---
 
 ### Scenarios
 
-| Highway | Roundabout | T-intersection | 5-way | Crossroads |
-|:---:|:---:|:---:|:---:|:---:|
-| <img src="assets/highway.png" width="160" height="160"/> | <img src="assets/roundabout.png" width="160" height="160"/> | <img src="assets/t_cross_3.png" width="160" height="160"/> | <img src="assets/t_cross_5.png" width="160" height="160"/> | <img src="assets/+_cross.png" width="160" height="160"/> |
+| Highway | Roundabout | T-intersection |
+|:---:|:---:|:---:|
+| <img src="assets/highway.png" width="240" height="240"/> | <img src="assets/roundabout.png" width="240" height="240"/> | <img src="assets/t_cross_3.png" width="240" height="240"/> |
+
+| 5-way | Crossroads |
+|:---:|:---:|
+| <img src="assets/t_cross_5.png" width="240" height="240"/> | <img src="assets/+_cross.png" width="240" height="240"/> |
 
 ---
 
