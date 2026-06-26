@@ -7,6 +7,10 @@ built on [SUMO](https://sumo.dlr.de) — the open-source microscopic traffic sim
 
 <video src="https://github.com/user-attachments/assets/d261b6f3-9058-4ce7-bd32-125d60cd6d30" controls autoplay loop width="100%"></video>
 
+*A SAC-trained policy navigating a 3-lane highway with dense traffic. The left panel is the live dashboard built into the library; the right panel is the SUMO simulator.*
+
+*The agent observes its own speed and lane, whether the adjacent lanes are clear, and the distance and relative speed of the nearest vehicles ahead and behind in each lane. At every step it outputs a continuous acceleration command and a lane-change signal, both in `[-1, 1]`. The lane-change signal is treated as a threshold: above `+0.9` triggers a left change, below `-0.9` triggers a right change, anything in between keeps the current lane.*
+
 ---
 
 ### Scenarios
@@ -35,31 +39,31 @@ and custom scenario design, without adopting a monolithic framework.
 
 ## Architecture
 
-```
-┌─ sumo_gym_ego ──────────────────────────────────────────────┐
-│                                                             │
-│   obs/          reward/         ego/         metrics/       │
-│   EgoSpeedObs   HighSpeedRew    DiscreteEgo  ActionRate     │
-│   NeighborObs   ComfortRew      ContinuousEgo AvgSpeed      │
-│   LaneFreeObs   TerminalRew     ...          Reward2Metrics │
-│        │              │              │             │        │
-│        └──────────────┴──────────────┴─────────────┘        │
-│                  CompositeObservation                       │
-│                  CompositeReward                            │
-│                  CompositeMetricsTracker                    │
-│                            │                                │
-│                      SumoEnv  (Gymnasium API)               │
-│                  make_env · make_vec_env                    │
-└─────────────────────────────────────────────────────────────┘
-                             │
-┌─ sumo_rl_ego ───────────────────────────────────────────────┐
-│   load_policy · run_episode · play_policy                   │
-└─────────────────────────────────────────────────────────────┘
-                             │
-┌─ experiments/  (optional) ──────────────────────────────────┐
-│   Hydra configs · Stable-Baselines3 · Weights & Biases      │
-└─────────────────────────────────────────────────────────────┘
-```
+<div align="center"><pre>
+┌─ sumo_gym_ego ─────────────────────────────────────────────────────────────────┐
+│                                                                                │
+│   obs/               reward/              ego/               metrics/          │
+│   EgoSpeedObs        HighSpeedReward      DiscreteEgo        ActionRateMetrics │
+│   NeighborObs        ComfortReward        ContinuousEgo      AvgSpeedMetrics   │
+│   LaneFreeObs        TerminalReward       ...                Reward2Metrics    │
+│   ...                ...                                     ...               │
+│        │                   │                   │                   │           │
+│        └───────────────────┴───────────────────┴───────────────────┘           │
+│                      CompositeObservation · CompositeReward                    │
+│                            CompositeMetricsTracker                             │
+│                                       │                                        │
+│                                    SumoEnv  (Gymnasium API)                    │
+│                             make_env · make_vec_env                            │
+└────────────────────────────────────────────────────────────────────────────────┘
+                                       │
+┌─ sumo_rl_ego ──────────────────────────────────────────────────────────────────┐
+│               load_policy · run_episode · play_policy                          │
+└────────────────────────────────────────────────────────────────────────────────┘
+                                       │
+┌─ experiments/  (optional) ─────────────────────────────────────────────────────┐
+│           Hydra configs · Stable-Baselines3 · Weights & Biases                 │
+└────────────────────────────────────────────────────────────────────────────────┘
+</pre></div>
 
 `sumo_gym_ego` has no dependency on `sumo_rl_ego`.
 Both packages expose stable, independent public APIs.
