@@ -26,7 +26,7 @@ class LaneFreeObs(BaseObservationBuilder):
 
         ego_pos = self.sim.vehicle.getLanePosition(self.ego_id)
 
-        # controlla corsia sinistra
+        # check left lane
         if lane_index < num_lanes - 1:
             left_lane = lane_index + 1
             vehs = self.sim.lane.getLastStepVehicleIDs(f"{road_id}_{left_lane}")
@@ -37,9 +37,9 @@ class LaneFreeObs(BaseObservationBuilder):
                     left_free = 0.0
                     break
         else:
-            left_free = 0.0  # corsia non esiste
+            left_free = 0.0  # lane does not exist
 
-        # controlla corsia destra
+        # check right lane
         if lane_index > 0:
             right_lane = lane_index - 1
             vehs = self.sim.lane.getLastStepVehicleIDs(f"{road_id}_{right_lane}")
@@ -50,15 +50,12 @@ class LaneFreeObs(BaseObservationBuilder):
                     right_free = 0.0
                     break
         else:
-            right_free = 0.0  # corsia non esiste
+            right_free = 0.0  # lane does not exist
 
         return np.array([left_free, right_free], dtype=np.float64)
 
 
-    def print_obs(self, obs):
-
+    def format_obs(self, obs) -> str:
         left = "FREE" if obs[0] > 0.5 else "BLOCKED"
         right = "FREE" if obs[1] > 0.5 else "BLOCKED"
-
-        print(f"{'left':>10} {'right':>10}")
-        print(f"{left:>10} {right:>10}")
+        return f"{'left':>10} {'right':>10}\n{left:>10} {right:>10}"

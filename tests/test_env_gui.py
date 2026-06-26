@@ -11,9 +11,9 @@ pytestmark = pytest.mark.skipif(
 
 def test_make_env_gui_smoke():
     pytest.importorskip("traci")
-    import sumo_rl_ego as sre
+    import sumo_gym_ego as sge
 
-    env = sre.make_env("HighwayEgo-v0", seed=0, reward="fast", ego="discrete", use_gui=True)
+    env = sge.make_env("HighwayEgo-v0", seed=0, reward="fast", ego="discrete", use_gui=True)
 
     try:
         obs, _ = env.reset()

@@ -172,53 +172,39 @@ class NeighborObs(BaseObservationBuilder):
         return np.array(obs, dtype=np.float64)
     
 
-    def print_obs(self, obs):
-
+    def format_obs(self, obs) -> str:
         rows = ["front", "back"]
         cols = ["left", "same", "right"]
 
         idx = 0
 
-        # costruisco tabelle per feature
         tables = {
             f: {(r, c): "-" for r in rows for c in cols}
             for f in self.features
         }
 
         for n in self.neighbors:
-
             side, pos = n.split("_")
-
             for f in self.features:
-
                 val = float(obs[idx])
-
                 if f == "distance":
-                    val = val * self.max_distance
-                    val = f"{val:.1f}"
-
+                    val = f"{val * self.max_distance:.1f}"
                 elif f == "rel_speed":
-                    val = val * self.max_speed
-                    val = f"{val:.1f}"
-
+                    val = f"{val * self.max_speed:.1f}"
                 elif f == "ttc":
-                    val = val * self.max_ttc
-                    val = f"{val:.1f}"
-
+                    val = f"{val * self.max_ttc:.1f}"
                 tables[f][(pos, side)] = val
-
                 idx += 1
 
-        # stampa
+        lines = []
         for f in self.features:
-
-            print(f"\n[{f}]")
-            print(f"{'':8s}{'left':>12}{'same':>12}{'right':>12}")
-
+            lines.append(f"\n[{f}]")
+            lines.append(f"{'':8s}{'left':>12}{'same':>12}{'right':>12}")
             for r in rows:
-                print(
+                lines.append(
                     f"{r:8s}"
                     f"{tables[f][(r,'left')]:>12}"
                     f"{tables[f][(r,'same')]:>12}"
                     f"{tables[f][(r,'right')]:>12}"
                 )
+        return "\n".join(lines)

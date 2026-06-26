@@ -123,16 +123,11 @@ class CompositeObservation(CompositePlugin, BaseObservationBuilder):
         return np.concatenate(obs)
     
     
-    def print_obs(self, obs):
-
+    def format_obs(self, obs) -> str:
         idx = 0
-
+        parts = []
         for o in self.plugins:
-
             size = o.observation_space.shape[0]
-            obs_part = obs[idx: idx + size]
-
-            if hasattr(o, "print_obs"):
-                o.print_obs(obs_part)
-
+            parts.append(o.format_obs(obs[idx: idx + size]))
             idx += size
+        return "\n\n".join(parts)

@@ -2,7 +2,6 @@ from pathlib import Path
 
 import hydra
 
-import sumo_rl_ego as sre
 import wandb
 
 from hydra.utils import get_original_cwd, instantiate
@@ -24,28 +23,6 @@ def resolve_paths(cfg):
         cfg.source.model_path = str(Path(get_original_cwd()) / cfg.source.model_path)
 
 
-
-    
-def confirm_cfg():
-    while True:
-        user_input = input("Proceed with this configuration? (y/n): ").strip().lower()
-        if user_input == 'y':
-            break
-        elif user_input == 'n':
-            print("Aborting run.")
-            exit(0)
-        else:
-            print("Invalid input. Please enter 'y' or 'n'.")
-
-
-def init_wandb(cfg):
-    if not cfg.wandb.enabled:
-        return None
-
-    return wandb.init(
-        config=OmegaConf.to_container(cfg, resolve=True),
-        **OmegaConf.to_container(cfg.wandb.kwargs, resolve=True),
-    )
 
 
 def load_cfg_from_model_path(model_path):
@@ -108,6 +85,9 @@ def check_source_cfg(cfg: DictConfig) -> None:
     
 
 def load_policy_from_cfg(cfg: DictConfig, env=None) -> DictConfig:
+    from sumo_rl_ego.policies.model_policy import ModelPolicy
+    from sumo_rl_ego.policies.factory import load_policy
+
     if cfg.source.model_path is not None:
         source_cfg = load_cfg_from_model_path(cfg.source.model_path)
         algo_cls = ALGO_REGISTRY[source_cfg.model.algo]
@@ -116,13 +96,13 @@ def load_policy_from_cfg(cfg: DictConfig, env=None) -> DictConfig:
             env=env,
             device="cpu",
         )
-        return sre.ModelPolicy(model)
-    
+        return ModelPolicy(model)
+
     if cfg.source.model_id is not None:
-        return sre.load_policy(cfg.source.model_id, env=env)
-    
+        return load_policy(cfg.source.model_id, env=env)
+
     if cfg.source.policy_id is not None:
-        return sre.load_policy(cfg.source.policy_id)
+        return load_policy(cfg.source.policy_id)
     
     if cfg.source.policy_class is not None:
         return instantiate(cfg.source.policy_class)

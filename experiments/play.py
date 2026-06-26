@@ -1,15 +1,14 @@
 import hydra
+import sumo_gym_ego as sge
 import sumo_rl_ego as sre
 
 from omegaconf import DictConfig, OmegaConf
 
 from sumo_rl_ego.utils import (
-    confirm_cfg,
     check_source_cfg,
     load_policy_from_cfg,
     resolve_paths,
 )
-
 
 def print_play_cfg(cfg, title):
     print(f"\n========== PLAYCONFIG ==========\n")
@@ -36,12 +35,11 @@ def main(cfg: DictConfig):
     check_source_cfg(cfg)
 
     print_play_cfg(cfg, "PLAY")
-    confirm_cfg()
 
     print("Loading environment...")
-    env = sre.make_env(
-        cfg.env.id, 
-        seed=cfg.run.seed, 
+    env = sge.make_env(
+        cfg.env.id,
+        seed=cfg.run.seed,
         **cfg.env.kwargs,
         use_gui=True,
     )
@@ -49,11 +47,17 @@ def main(cfg: DictConfig):
     print("Loading policy...")
     policy = load_policy_from_cfg(cfg)
 
+    display = None
+    if cfg.run.get("display", False):
+        display = sre.WindowDisplay(env, pause=cfg.run.manual)
+
     print("Starting play...")
     sre.play_policy(
         env,
         policy,
         manual=cfg.run.manual,
+        display=display,
+        step_delay=0.1,
     )
 
     env.close()

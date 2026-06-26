@@ -58,5 +58,5 @@ class HighwayDiscreteEgo(BaseEgoController):
         elif action == DiscreteActions.LCR:
             self.sim.vehicle.changeLane(self.ego_id, lane_index - 1, self.lc_duration)
 
-    def print_action(self, action):
-        print(f"Action: {DiscreteActions(action).name}")
+    def format_action(self, action) -> str:
+        return f"Action: {DiscreteActions(action).name}"

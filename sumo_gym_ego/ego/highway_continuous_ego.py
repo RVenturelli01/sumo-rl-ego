@@ -56,6 +56,6 @@ class HighwayContinuousEgo(BaseEgoController):
                 self.ego_id, lane_index - 1, self.lc_duration
             )
 
-    def print_action(self, action):
+    def format_action(self, action) -> str:
         a, lc = action
-        print(f"Accel: {a:.2f} m/s^2 | LaneCmd: {lc:.2f}")
+        return f"Accel: {a:.2f} m/s^2 | LaneCmd: {lc:.2f}"

@@ -1,13 +1,14 @@
-run: 
+run:
   name: "play"
   seed: 0
-  manual: true
+  manual: false
+  display: true
   output_dir: ${hydra:runtime.output_dir}
   
 
 # only one between: model_id | model_path | policy_id | policy_class 
 source:  
-  model_id: null 
+  model_id: sac-fast 
   model_path: null
   policy_id: null
   policy_class: 
@@ -18,7 +19,7 @@ env:
   id: "HighwayEgo-v0"
   kwargs:
     reward: "fast"
-    ego: "discrete"
+    ego: "continuous"
 
 
 hydra:

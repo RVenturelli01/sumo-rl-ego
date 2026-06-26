@@ -22,7 +22,9 @@ class BaseEgoController(BaseEnvPlugin):
     def apply_action(self, action):
         pass
 
-
+    def format_action(self, action) -> str:
+        """Human-readable string for action. Override in subclasses for richer output."""
+        return str(action)
 
 
 class BaseObservationBuilder(BaseEnvPlugin):
@@ -30,6 +32,10 @@ class BaseObservationBuilder(BaseEnvPlugin):
     @abstractmethod
     def build_obs(self):
         pass
+
+    def format_obs(self, obs) -> str:
+        """Human-readable string for obs. Override in subclasses for richer output."""
+        return str(obs)
 
 
 

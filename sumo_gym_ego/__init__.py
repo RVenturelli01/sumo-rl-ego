@@ -33,6 +33,9 @@ from . import obs
 from . import reward
 from . import ego
 from . import metrics
+from . import sumo_envs
+
+from .sumo_envs.factory import make_env, make_vec_env
 
 __all__ = [
     "SumoEnv",
@@ -51,4 +54,7 @@ __all__ = [
     "reward",
     "ego",
     "metrics",
+    "sumo_envs",
+    "make_env",
+    "make_vec_env",
 ]

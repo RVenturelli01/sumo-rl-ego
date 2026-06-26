@@ -22,10 +22,9 @@ class EgoSpeedObs(BaseObservationBuilder):
 
         return np.array([speed_norm], dtype=np.float64)
 
-    def print_obs(self, obs):
-
+    def format_obs(self, obs) -> str:
         speed = float(obs[0]) * self.max_speed
-        print(f"ego_speed : {speed:.3f} m/s")
+        return f"ego_speed : {speed:.3f} m/s"
 
 
 class EgoLaneObs(BaseObservationBuilder):
@@ -51,11 +50,9 @@ class EgoLaneObs(BaseObservationBuilder):
         return np.array([lane_norm], dtype=np.float64)
     
 
-    def print_obs(self, obs):
-
+    def format_obs(self, obs) -> str:
         lane_id = self.sim.vehicle.getLaneID(self.ego_id)
         edge = self.sim.lane.getEdgeID(lane_id)
         num_lanes = self.sim.edge.getLaneNumber(edge)
-
         lane_index = float(obs[0]) * max(num_lanes - 1, 1)
-        print(f"ego_lane : {lane_index:.3f}")
+        return f"ego_lane : {lane_index:.3f}"

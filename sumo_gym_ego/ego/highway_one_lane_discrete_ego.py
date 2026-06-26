@@ -48,5 +48,5 @@ class HighwayOneLaneDiscreteEgo(BaseEgoController):
             self.sim.vehicle.setSpeed(self.ego_id, new_speed)
             return
 
-    def print_action(self, action):
-        print(f"Action: {DiscreteActions(action).name}")
+    def format_action(self, action) -> str:
+        return f"Action: {DiscreteActions(action).name}"

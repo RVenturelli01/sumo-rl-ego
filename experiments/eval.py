@@ -1,6 +1,7 @@
 import numpy as np
 import hydra
 import wandb
+import sumo_gym_ego as sge
 import sumo_rl_ego as sre
 
 from collections import defaultdict
@@ -8,9 +9,7 @@ from omegaconf import DictConfig, OmegaConf
 from sumo_gym_ego import EgoStatus
 
 from sumo_rl_ego.utils import (
-    init_wandb, 
     resolve_paths,
-    confirm_cfg,
     check_source_cfg,
     load_policy_from_cfg,
 )
@@ -123,17 +122,18 @@ def main(cfg: DictConfig):
     check_source_cfg(cfg)
 
     print_eval_cfg(cfg)
-    confirm_cfg()
 
-
-    run = init_wandb(cfg)
+    run = wandb.init(
+        config=OmegaConf.to_container(cfg, resolve=True),
+        **OmegaConf.to_container(cfg.wandb.kwargs, resolve=True),
+    ) if cfg.wandb.enabled else None
     env = None
 
     try:
         print("Loading environment...")
-        env = sre.make_env(
-            cfg.env.id, 
-            seed=cfg.run.seed, 
+        env = sge.make_env(
+            cfg.env.id,
+            seed=cfg.run.seed,
             **cfg.env.kwargs
         )
 

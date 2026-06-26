@@ -5,8 +5,8 @@ pytest.importorskip("stable_baselines3")
 
 import sumo_gym_ego as sge
 import sumo_rl_ego as sre
-from sumo_rl_ego.sumo_envs import factory as env_factory
-from sumo_rl_ego.sumo_envs.registry import ENV_REGISTRY
+from sumo_gym_ego.sumo_envs import factory as env_factory
+from sumo_gym_ego.sumo_envs.registry import ENV_REGISTRY
 from sumo_rl_ego.workflows import evaluate_policy as evaluate_policy_from_workflows
 
 
@@ -24,20 +24,11 @@ class DummyVecEnv:
 def test_package_exports():
     assert sge.SumoEnv.__name__ == "SumoEnv"
 
-    expected = {
-        "make_env",
-        "make_vec_env",
-        "list_envs",
-        "Policy",
-        "policy_from_model",
-        "load_policy",
-        "list_policies",
-        "run_episode",
-        "rollout",
-        "evaluate_policy",
-        "play_policy",
-    }
-    assert expected.issubset(set(sre.__all__))
+    expected_sge = {"make_env", "make_vec_env"}
+    assert expected_sge.issubset(set(sge.__all__))
+
+    expected_sre = {"Policy", "load_policy", "list_policies", "run_episode", "play_policy"}
+    assert expected_sre.issubset(set(sre.__all__))
 
 
 def test_policy_subclass():
@@ -70,7 +61,7 @@ def test_list_policies_contains_builtin():
 def test_make_env(monkeypatch):
     monkeypatch.setitem(ENV_REGISTRY, "DummyEnv-v0", DummyEnv)
 
-    env = sre.make_env("DummyEnv-v0", seed=7, reward="fast")
+    env = sge.make_env("DummyEnv-v0", seed=7, reward="fast")
 
     assert env.seed == 7
     assert env.kwargs["reward"] == "fast"
@@ -80,7 +71,7 @@ def test_make_vec_env(monkeypatch):
     monkeypatch.setitem(ENV_REGISTRY, "DummyVecEnv-v0", DummyEnv)
     monkeypatch.setattr(env_factory, "SubprocVecEnv", DummyVecEnv)
 
-    env = sre.make_vec_env("DummyVecEnv-v0", n_envs=3, base_seed=10, reward="fast")
+    env = sge.make_vec_env("DummyVecEnv-v0", n_envs=3, base_seed=10, reward="fast")
 
     assert [subenv.seed for subenv in env.envs] == [10, 11, 12]
     assert all(subenv.kwargs["reward"] == "fast" for subenv in env.envs)

@@ -4,9 +4,10 @@ pytest.importorskip("gymnasium")
 pytest.importorskip("stable_baselines3")
 
 import sumo_rl_ego as sre
+from sumo_rl_ego import Policy
 
 
-class ConstantPolicy(sre.Policy):
+class ConstantPolicy(Policy):
     def predict(self, obs):
         return 0
 

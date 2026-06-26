@@ -1,6 +1,6 @@
 from ..base_policy import Policy
 from ..registry import register_policy
-from ...sumo_envs.highway_envs.highway_ego_v0 import ENV_PARAMS
+from sumo_gym_ego.sumo_envs.highway_envs.highway_ego_v0 import ENV_PARAMS
 
 '''
 

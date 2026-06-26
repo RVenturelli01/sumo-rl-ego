@@ -1,10 +1,10 @@
-import sumo_rl_ego as sre
+import sumo_gym_ego as sge
 from stable_baselines3 import DQN
 
 
 def main():
-    
-    env = sre.make_vec_env(
+
+    env = sge.make_vec_env(
         "HighwayEgo-v0",
         n_envs=2,
         base_seed=0,

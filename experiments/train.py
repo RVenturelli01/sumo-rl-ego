@@ -1,14 +1,13 @@
 import hydra
+import wandb
+import sumo_gym_ego as sge
 import sumo_rl_ego as sre
 
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from stable_baselines3 import A2C, DQN, PPO, SAC, TD3
 
-
 from sumo_rl_ego.utils import (
-    init_wandb, 
-    confirm_cfg,
     save_outputs,
     CustomLoggingCallback,
 )
@@ -39,17 +38,19 @@ def main(cfg: DictConfig) -> None:
     _ = HydraConfig.get().runtime.output_dir
 
     print_train_cfg(cfg)
-    confirm_cfg()
-    
-    run = init_wandb(cfg)
+
+    run = wandb.init(
+        config=OmegaConf.to_container(cfg, resolve=True),
+        **OmegaConf.to_container(cfg.wandb.kwargs, resolve=True),
+    ) if cfg.wandb.enabled else None
     env = None
 
     try:
         print("Creating environment...")
-        env = sre.make_vec_env(
-            cfg.env.id, 
-            n_envs=cfg.env.n_envs, 
-            base_seed=cfg.run.seed, 
+        env = sge.make_vec_env(
+            cfg.env.id,
+            n_envs=cfg.env.n_envs,
+            base_seed=cfg.run.seed,
             **cfg.env.kwargs
         )
 

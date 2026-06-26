@@ -3,7 +3,7 @@ from pathlib import Path
 import sumo_gym_ego as sge
 
 
-scenario = Path("sumo_rl_ego/sumo_envs/scenarios/highway_fast_modified/highway.sumocfg")
+scenario = Path("sumo_gym_ego/sumo_envs/scenarios/highway_fast_modified/highway.sumocfg")
 
 env = sge.SumoEnv(
     sumocfg_files=[str(scenario)],

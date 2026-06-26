@@ -20,9 +20,10 @@ class Reward2Metrics(BaseMetricsTracker):
 
 
     def compute_step_metrics(self, obs, action, next_obs, reward, info):
-        self.reward_sum += self.reward_function.compute(obs, action, next_obs, info)
+        step_reward = self.reward_function.compute(obs, action, next_obs, info)
+        self.reward_sum += step_reward
 
-        return {}
+        return {f"rewards/{self.reward_name}": step_reward}
 
 
     def compute_episode_metrics(self, obs, action, next_obs, reward, info):

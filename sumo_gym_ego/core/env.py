@@ -169,8 +169,8 @@ class DefaultObservationBuilder(BaseObservationBuilder):
     def reset(self):
         pass
 
-    def print_obs(self, obs):
-        print("Default observation:", obs)
+    def format_obs(self, obs) -> str:
+        return f"Default observation: {obs}"
 
 
 
@@ -204,5 +204,5 @@ class DefaultEgoController(BaseEgoController):
     def reset(self):
         pass
 
-    def print_action(self, action):
-        print(f"Action: {DiscreteActions(action).name}")
+    def format_action(self, action) -> str:
+        return f"Action: {DiscreteActions(action).name}"

@@ -1,5 +1,5 @@
 from pathlib import Path
-from sumo_rl_ego.sumo_envs.registry import register_env
+from sumo_gym_ego.sumo_envs.registry import register_env
 import sumo_gym_ego as sge
 from typing import Literal
 from dataclasses import dataclass
@@ -176,14 +176,14 @@ class HighwayEgo_v0(sge.SumoEnv):
             if ego == "discrete":
                 metrics_tracker = sge.CompositeMetricsTracker([
                     sge.metrics.AvgSpeedMetrics(),
-                    sge.metrics.ActionRateMetrics(),
+                    sge.metrics.DiscreteActionRateMetrics(),
                     sge.metrics.Reward2Metrics(reward_function=reward_fast, reward_name="ep_fast_return"),
                     sge.metrics.Reward2Metrics(reward_function=reward_comfort, reward_name="ep_comfort_return"),
                 ])
             elif ego == "continuous":
                 metrics_tracker = sge.CompositeMetricsTracker([
                     sge.metrics.AvgSpeedMetrics(),
-                    sge.metrics.ActionRateMetrics2(
+                    sge.metrics.ContinuousActionRateMetrics(
                         max_acc=ENV_PARAMS.max_acc,
                         max_dec=ENV_PARAMS.max_dec,
                         lane_threshold=ENV_PARAMS.lane_threshold,
